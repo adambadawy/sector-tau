@@ -2,12 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>RENAME_ME</title>
+    <title>Sector Tau</title>
     <script src="lib/phaser.min.js"></script>
-    <script src="states/Menu.js"></script>
-    <script src="states/Play.js"></script>
+    <script src="src/Menu.js"></script>
+    <script src="src/Play.js"></script>
     <style>
-
         body {
             margin: 0;
             padding: 0;
@@ -22,8 +21,8 @@
 <script type="text/javascript">
 (function() {
     var game = new Phaser.Game(800, 600, Phaser.AUTO, '');
-    game.state.add('Menu', RENAME_ME.Menu);
-    game.state.add('Play', RENAME_ME.Play);
+    game.state.add('Menu', SECTOR_TAU.Menu);
+    game.state.add('Play', SECTOR_TAU.Play);
     game.state.start('Menu');
 })();
 

@@ -25,9 +25,9 @@ def serve_lib(libname):
 	return serve('lib/%s' % libname)
 
 
-@app.route('/states/<statename>')
-def serve_state(statename):
-	return serve('states/%s' % statename)
+@app.route('/src/<scriptname>')
+def serve_src(scriptname):
+	return serve('src/%s' % scriptname)
 
 
 if __name__ == '__main__':

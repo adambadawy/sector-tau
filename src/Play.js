@@ -1,7 +1,7 @@
-RENAME_ME.Play = function(game) {
+SECTOR_TAU.Play = function(game) {
 };
 
-RENAME_ME.Play.prototype = {
+SECTOR_TAU.Play.prototype = {
     preload: function() {
         this.game.load.atlas(
             'sprites', 'images/sprites.png', 'images/sprites.json'

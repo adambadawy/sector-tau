@@ -1,9 +1,9 @@
-RENAME_ME = {};
+SECTOR_TAU = {};
 
-RENAME_ME.Menu = function (game) {
+SECTOR_TAU.Menu = function (game) {
 };
 
-RENAME_ME.Menu.prototype = {
+SECTOR_TAU.Menu.prototype = {
     init: function() {
         this.input.maxPointers = 1;
         this.stage.disableVisibilityChange = true;
@@ -27,7 +27,7 @@ RENAME_ME.Menu.prototype = {
         var title = this.game.add.text(
             menuX,
             menuPos,
-            'RENAME_ME',
+            'Sector Tau',
             { fill: '#fff', fontSize: 72 }
         );
         title.anchor.set(0.5, 0.5);
