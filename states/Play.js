@@ -118,11 +118,13 @@ RENAME_ME.Play.prototype = {
         return dragc;
     },
 
+    /*
     render: function() {
-        // this.game.debug.text(
-        //     'dx: ' + (this.player.body.velocity.x | 0) + '\ndy: ' + (this.player.body.velocity.y | 0),
-        //     3, 12,
-        //     '#fff'
-        // );
+        this.game.debug.text(
+            'dx: ' + (this.player.body.velocity.x | 0) + '\ndy: ' + (this.player.body.velocity.y | 0),
+            3, 12,
+            '#fff'
+        );
     }
+    // */
 };
