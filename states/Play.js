@@ -71,16 +71,16 @@ RENAME_ME.Play.prototype = {
         obj.scale.set(scale, scale);
         obj.anchor.set(0.5, 0.5);
         this.game.physics.enable(obj, Phaser.Physics.ARCADE);
-        obj.body.drag = 10000;
+        // obj.body.drag = 10000;
         // obj.body.maxVelocity = 60;
     },
 
     update: function() {
         var coeff = 3000;
-        var drag = 10;
-        var threshold = 0.1 * coeff;
-        var ax = this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) * coeff;
-        var ay = this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) * coeff;
+        var drag = 15;
+        var threshold = 0.01 * coeff;
+        var ax = coeff * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
+        var ay = coeff * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
         var dragx = 0;
         var dragy = 0;
         if (ax <= -threshold) {
@@ -91,28 +91,31 @@ RENAME_ME.Play.prototype = {
         }
         else {
             ax = 0;
-            var vx = this.player.body.velocity.x;
-            if (vx > 0) {
-                dragx = -(Math.min(vx, drag));
-            }
-            else if (vx < 0) {
-                dragx = Math.min(-vx, drag);
-            }
+            dragx = this.calculateDrag(this.player.body.velocity.x, drag);
             this.player.animations.play('main');
         }
         if (Math.abs(ay) < threshold) {
             ay = 0;
-            var vy = this.player.body.velocity.y;
-            if (vy > 0) {
-                dragy = -(Math.min(vy, drag));
-            }
-            else if (vy < 0) {
-                dragy = Math.min(-vy, drag);
-            }
+            dragy = this.calculateDrag(this.player.body.velocity.y, drag);
         }
         this.player.body.acceleration.set(ax, ay);
         this.player.body.velocity.add(dragx, dragy);
         this.player.body.velocity.clamp(-150, 150);
+    },
+
+    // Calculates the drag for the given velocity component
+    calculateDrag: function(vc, drag) {
+        var dragc;
+        if (vc > 0) {
+            dragc = -(Math.min(vc, drag));
+        }
+        else if (vc < 0) {
+            dragc = Math.min(-vc, drag);
+        }
+        else {
+            dragc = 0;
+        }
+        return dragc;
     },
 
     render: function() {
