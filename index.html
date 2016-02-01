@@ -2,18 +2,16 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>My TITLE!</title>
+    <title>RENAME_ME</title>
     <script src="lib/phaser.min.js"></script>
-    <script src="states/Boot.js"></script>
-    <script src="states/Preloader.js"></script>
-    <script src="states/MainMenu.js"></script>
-    <script src="states/Game.js"></script>
+    <script src="states/Menu.js"></script>
+    <script src="states/Play.js"></script>
     <style>
 
         body {
             margin: 0;
             padding: 0;
-            background-color: #fff;
+            background-color: #1c1c1c;
         }
     </style>
     <meta name="viewport"
@@ -23,20 +21,10 @@
 
 <script type="text/javascript">
 (function() {
-
-    //  100% of the browser window - see Boot.js for additional configuration
-    var SAFE_ZONE_WIDTH = 960;// * window.devicePixelRatio;
-    var SAFE_ZONE_HEIGHT = 640;// * window.devicePixelRatio;
-    var game = new Phaser.Game(SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT, Phaser.AUTO, '');
-
-    //  Add the States your game has.
-    game.state.add('Boot', RENAME_ME.Boot);
-    game.state.add('Preloader', RENAME_ME.Preloader);
-    game.state.add('MainMenu', RENAME_ME.MainMenu);
-    game.state.add('Game', RENAME_ME.Game);
-
-    //  Now start the Boot state.
-    game.state.start('Boot');
+    var game = new Phaser.Game(800, 600, Phaser.AUTO, '');
+    game.state.add('Menu', RENAME_ME.Menu);
+    game.state.add('Play', RENAME_ME.Play);
+    game.state.start('Menu');
 })();
 
 </script>

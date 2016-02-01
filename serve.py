@@ -32,6 +32,6 @@ def serve_state(statename):
 
 if __name__ == '__main__':
     # If we're in `debug`, the server's gotta be private. Major security hazard.
-    debug = True
+    debug = False
     host = '127.0.0.1' if debug else '0.0.0.0'
     app.run(host=host, port=5028, debug=debug)

@@ -1,0 +1,165 @@
+{
+    "frames": [
+        {
+            "filename": "player1Left",
+            "frame": { "x": 0, "y": 0, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "player1",
+            "frame": { "x": 16, "y": 0, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "player1Right",
+            "frame": { "x": 32, "y": 0, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "enemy1A",
+            "frame": { "x": 48, "y": 0, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "enemy1B",
+            "frame": { "x": 64, "y": 0, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "boss1",
+            "frame": { "x": 80, "y": 0, "w": 32, "h": 32 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bossPlayer",
+            "frame": { "x": 112, "y": 0, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "player2Left",
+            "frame": { "x": 0, "y": 16, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "player2",
+            "frame": { "x": 16, "y": 16, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "player2Right",
+            "frame": { "x": 32, "y": 16, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "enemy2A",
+            "frame": { "x": 48, "y": 16, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "enemy2B",
+            "frame": { "x": 64, "y": 16, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bossLife",
+            "frame": { "x": 112, "y": 16, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "heal",
+            "frame": { "x": 0, "y": 32, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "gold",
+            "frame": { "x": 16, "y": 32, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "life",
+            "frame": { "x": 32, "y": 32, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "enemy3A",
+            "frame": { "x": 48, "y": 32, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "enemy3B",
+            "frame": { "x": 64, "y": 32, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "boss2",
+            "frame": { "x": 80, "y": 32, "w": 48, "h": 32 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bulletGreen",
+            "frame": { "x": 0, "y": 48, "w": 4, "h": 4 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bulletWhite",
+            "frame": { "x": 4, "y": 48, "w": 4, "h": 4 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bomb",
+            "frame": { "x": 8, "y": 48, "w": 8, "h": 8 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bossEnemy1A",
+            "frame": { "x": 48, "y": 48, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bossEnemy1B",
+            "frame": { "x": 64, "y": 48, "w": 16, "h": 16 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bulletPink",
+            "frame": { "x": 0, "y": 52, "w": 4, "h": 4 },
+            "rotated": false,
+            "trimmed": false
+        },
+        {
+            "filename": "bulletBlue",
+            "frame": { "x": 4, "y": 52, "w": 4, "h": 4 },
+            "rotated": false,
+            "trimmed": false
+        }
+    ],
+    "meta": {
+        "image": "images/sprites.png",
+        "size": { "w": 128, "h": 128 },
+        "scale": "1"
+    }
+}
