@@ -50,6 +50,8 @@ SECTOR_TAU.Play.prototype = {
         obj.animations.play('main');
         this.initObject(obj, 3.0);
         obj.body.collideWorldBounds = true;
+        obj.health = 10;
+        obj.invuln = false;
         this.initShooter(obj, Phaser.Timer.SECOND * 0.4);
         obj.bullets = this.game.add.group();
         return obj;
@@ -64,8 +66,8 @@ SECTOR_TAU.Play.prototype = {
     createGrumpy: function(x, y, id, health) {
         var frames = [id + 'A', id + 'B'];
         var obj = this.createObject2(x, y, 3.0, frames);
-        obj.health = health;
         obj.moveState = -1;
+        obj.health = health;
         obj.invuln = false;
         obj.events.onKilled.add(function() {
             this.score += 9;
@@ -183,11 +185,21 @@ SECTOR_TAU.Play.prototype = {
             this.player.bullets, this.grumpies,
             function(bullet, grumpy) {
                 bullet.kill();
-                this.grumpyDamage(grumpy);
+                this.damageWrapper(grumpy, 1, Phaser.Timer.SECOND);
             },
             null,
             this
         );
+
+        this.game.physics.arcade.overlap(
+            this.player, this.grumpies,
+            function(player, grumpy) {
+                this.damageWrapper(player, 0.5, Phaser.Timer.SECOND);
+            },
+            null,
+            this
+        );
+
         var w = this.world.width;
         var h = this.world.height;
         this.grumpies.forEachAlive(function(grumpy) {
@@ -260,12 +272,12 @@ SECTOR_TAU.Play.prototype = {
         this.setReloadTimer(this.player);
     },
 
-    grumpyDamage: function(grumpy) {
-        if (!grumpy.invuln) {
-            grumpy.damage(1);
-            grumpy.invuln = true;
-            this.game.time.events.add(Phaser.Timer.SECOND, function() {
-                grumpy.invuln = false;
+    damageWrapper: function(obj, amt, invulnTime) {
+        if (!obj.invuln) {
+            obj.damage(amt);
+            obj.invuln = true;
+            this.game.time.events.add(invulnTime, function() {
+                obj.invuln = false;
             }, this);
         }
     },
@@ -283,6 +295,7 @@ SECTOR_TAU.Play.prototype = {
     },
 
     damageAlphaToggle: function() {
+        this.damageAlphaToggleOne(this.player);
         this.grumpies.forEachAlive(this.damageAlphaToggleOne, this);
     },
 
