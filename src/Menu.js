@@ -1,3 +1,13 @@
+FONT_TITLE = 'PT Sans Narrow';
+FONT_OTHER = 'Source Code Pro';
+
+WebFontConfig = {
+    active: function() {},
+    google: {
+        families: [FONT_TITLE, FONT_OTHER]
+    }
+};
+
 SECTOR_TAU = {};
 
 SECTOR_TAU.Menu = function (game) {
@@ -25,6 +35,10 @@ SECTOR_TAU.Menu.prototype = {
         );
         this.loadingText.anchor.set(0.5, 0.5);
 
+        this.game.load.script(
+            'webfont',
+            '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js'
+        );
         this.game.load.atlas(
             'sprites', 'res/sprites.png', 'res/sprites.json'
         );
@@ -43,8 +57,8 @@ SECTOR_TAU.Menu.prototype = {
         this.title = this.game.add.text(
             menuX,
             menuPos,
-            'Sector Tau',
-            { fill: '#fff', fontSize: 72 }
+            'SECTθR TAU',
+            { fill: '#fff', font: FONT_TITLE, fontSize: 98 }
         );
         this.title.anchor.set(0.5, 0.5);
 
@@ -52,7 +66,7 @@ SECTOR_TAU.Menu.prototype = {
             menuX,
             menuPos + 100,
             'Press ATTACK!',
-            { fill: '#fff', fontSize: 32 }
+            { fill: '#fff', font: FONT_OTHER, fontSize: 32, fontStyle: 'bold' }
         );
         this.pressAtk.alpha = 0;
         this.pressAtk.anchor.set(0.5, 0.5);

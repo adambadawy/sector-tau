@@ -23,13 +23,12 @@ SECTOR_TAU.Play.prototype = {
         this.makeGrumpy1Subgroup(8, 48);
         this.makeGrumpy2Subgroup(8, 48);
 
-        this.score = 0;
         this.scoreText = this.game.add.text(
-            ww, 0,
-            '0',
-            { fill: '#fff', fontSize: 16 }
+            ww - 4, 0, '0',
+            { fill: '#fff', font: FONT_OTHER, fontSize: 32, fontStyle: 'bold' }
         );
         this.scoreText.anchor.set(1, 0);
+        this.scoreText.actual = 0;
         this.scoreText.shown = 0;
 
         this.game.time.events.loop(
@@ -69,7 +68,7 @@ SECTOR_TAU.Play.prototype = {
         obj.body.collideWorldBounds = true;
         obj.health = 10;
         obj.flickerTimer = null;
-        this.initShooter(obj, Phaser.Timer.SECOND * 0.2);
+        this.initShooter(obj, Phaser.Timer.SECOND * 0.1);
         obj.bullets = this.game.add.group();
         return obj;
     },
@@ -88,7 +87,7 @@ SECTOR_TAU.Play.prototype = {
         obj.health = health;
         obj.flickerTimer = null;
         obj.events.onKilled.add(function() {
-            this.score += value;
+            this.addScore(value);
         }, this);
         return obj;
     },
@@ -276,10 +275,14 @@ SECTOR_TAU.Play.prototype = {
             grumpy.moveFunc(grumpy, w, h);
         }, this);
 
-        if (this.scoreText.shown < this.score) {
+        if (this.scoreText.shown < this.scoreText.actual) {
             this.scoreText.shown += 1;
             this.scoreText.text = '' + this.scoreText.shown;
         }
+    },
+
+    addScore: function(amt) {
+        this.scoreText.actual = Math.min(this.scoreText.actual + amt, 9999999);
     },
 
     doCollision: function() {
