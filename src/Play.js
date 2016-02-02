@@ -23,7 +23,7 @@ SECTOR_TAU.Play.prototype = {
         var hww = ww / 2;
         var hwh = wh / 2;
 
-        this.player = this.createPlayerObj(hww, wh - 64, 'player1');
+        this.player = this.createPlayer(hww, wh - 64, 'player1');
 
         var numGrumpies = 8;
         var spacing = 48;
@@ -37,19 +37,36 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
-    createPlayerObj: function(x, y, id) {
+    createPlayer: function(x, y, id) {
         var obj = this.game.add.sprite(x, y, 'sprites');
         obj.animations.add('left', [id + 'Left']);
         obj.animations.add('main', [id]);
         obj.animations.add('right', [id + 'Right']);
         obj.animations.play('main');
         this.initObject(obj, 3.0);
+        this.initShooter(obj, Phaser.Timer.SECOND * 0.5);
+        obj.bullets = this.game.add.group();
         return obj;
+    },
+
+    setReloadTimer: function(obj) {
+        this.game.time.events.add(obj.reloadTime, function() {
+            obj.canShoot = true;
+        });
     },
 
     createGrumpy: function(x, y, id) {
         var frames = [id + 'A', id + 'B'];
         return this.createObject2(x, y, 3.0, frames);
+    },
+
+    createBullet: function(x, y, dx, dy, id) {
+        var obj = this.game.add.sprite(x, y, 'sprites', 'bullet' + id);
+        this.initObject(obj, 2.0);
+        obj.body.velocity.set(dx, dy);
+        obj.checkWorldBounds = true;
+        obj.outOfBoundsKill = true;
+        return obj;
     },
 
     createObject1: function(x, y, scale, name) {
@@ -71,28 +88,32 @@ SECTOR_TAU.Play.prototype = {
         obj.scale.set(scale, scale);
         obj.anchor.set(0.5, 0.5);
         this.game.physics.enable(obj, Phaser.Physics.ARCADE);
-        // obj.body.drag = 10000;
-        // obj.body.maxVelocity = 60;
+    },
+
+    initShooter: function(obj, reloadTime) {
+        obj.reloadTime = reloadTime;
+        obj.canShoot = false;
+        this.setReloadTimer(obj);
     },
 
     update: function() {
-        var coeff = 3000;
+        this.updatePlayer();
+        this.game.physics.arcade.overlap(this.player.bullets, this.grumpies);
+    },
+
+    updatePlayer: function() {
+        var maxVel = 200;
+        var coeff = 1200;
         var drag = 15;
         var threshold = 0.01 * coeff;
+
         var ax = coeff * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
         var ay = coeff * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
         var dragx = 0;
         var dragy = 0;
-        if (ax <= -threshold) {
-            this.player.animations.play('left');
-        }
-        else if (ax >= threshold) {
-            this.player.animations.play('right');
-        }
-        else {
+        if (Math.abs(ax) < threshold) {
             ax = 0;
             dragx = this.calculateDrag(this.player.body.velocity.x, drag);
-            this.player.animations.play('main');
         }
         if (Math.abs(ay) < threshold) {
             ay = 0;
@@ -100,20 +121,51 @@ SECTOR_TAU.Play.prototype = {
         }
         this.player.body.acceleration.set(ax, ay);
         this.player.body.velocity.add(dragx, dragy);
-        this.player.body.velocity.clamp(-150, 150);
+        this.player.body.velocity.clamp(-maxVel, maxVel);
+
+        var vx = this.player.body.velocity.x;
+        if (vx < -145) {
+            this.player.animations.play('left');
+        }
+        else if (vx < 145) {
+            this.player.animations.play('main');
+        }
+        else {
+            this.player.animations.play('right');
+        }
+
+        if (this.player.canShoot) {
+            if (this.pad.isDown(Phaser.Gamepad.XBOX360_A)) {
+                this.playerShoot();
+            }
+        }
     },
 
-    // Calculates the drag for the given velocity component
+    playerShoot: function() {
+        var bulletX = this.player.x;
+        var bulletY = this.player.top - 1;
+        var bulletDY = -450;
+        var ret = this.player.bullets.getFirstDead(false, bulletX, bulletY);
+        if (ret === null) {
+            this.player.bullets.add(
+                this.createBullet(bulletX, bulletY, 0, bulletDY, 'Green')
+            );
+        }
+        else {
+            ret.body.velocity.set(0, bulletDY);
+        }
+        this.player.canShoot = false;
+        this.setReloadTimer(this.player);
+    },
+
+    // Calculates the drag for the given velocity component for the player
     calculateDrag: function(vc, drag) {
-        var dragc;
+        var dragc = 0;
         if (vc > 0) {
             dragc = -(Math.min(vc, drag));
         }
         else if (vc < 0) {
             dragc = Math.min(-vc, drag);
-        }
-        else {
-            dragc = 0;
         }
         return dragc;
     },
@@ -121,7 +173,7 @@ SECTOR_TAU.Play.prototype = {
     /*
     render: function() {
         this.game.debug.text(
-            'dx: ' + (this.player.body.velocity.x | 0) + '\ndy: ' + (this.player.body.velocity.y | 0),
+            '' + this.player.bullets.length,
             3, 12,
             '#fff'
         );
