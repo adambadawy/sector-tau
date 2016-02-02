@@ -2,12 +2,6 @@ SECTOR_TAU.Play = function(game) {
 };
 
 SECTOR_TAU.Play.prototype = {
-    preload: function() {
-        this.game.load.atlas(
-            'sprites', 'res/sprites.png', 'res/sprites.json'
-        );
-    },
-
     create: function() {
         this.game.input.gamepad.start();
         this.pad = this.game.input.gamepad.pad1;
@@ -73,7 +67,9 @@ SECTOR_TAU.Play.prototype = {
         obj.health = health;
         obj.moveState = -1;
         obj.invuln = false;
-        obj.events.onKilled.add(function() { this.score += 9; }, this)
+        obj.events.onKilled.add(function() {
+            this.score += 9;
+        }, this);
         return obj;
     },
 

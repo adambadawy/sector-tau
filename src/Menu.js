@@ -15,6 +15,12 @@ SECTOR_TAU.Menu.prototype = {
         this.scale.maxHeight = this.game.height;
     },
 
+    preload: function() {
+        this.game.load.atlas(
+            'sprites', 'res/sprites.png', 'res/sprites.json'
+        );
+    },
+
     create: function () {
         this.game.input.gamepad.start();
         this.pad = this.game.input.gamepad.pad1;
