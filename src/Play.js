@@ -205,14 +205,15 @@ SECTOR_TAU.Play.prototype = {
     },
 
     updatePlayer: function() {
-        var maxDX = 300;
-        var maxDY = maxDX / 3;
         var coeff = 1200;
+        var coeffY = 4 / 9;
+        var maxDX = 300;
+        var maxDY = maxDX * coeffY;
         var drag = 15;
         var threshold = 0.01 * coeff;
 
         var ax = coeff * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
-        var ay = coeff * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
+        var ay = coeff * coeffY * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
         var dragx = 0;
         var dragy = 0;
         if (Math.abs(ax) < threshold) {
