@@ -36,6 +36,15 @@ SECTOR_TAU.Play.prototype = {
             );
         }
 
+        this.score = 0;
+        this.scoreText = this.game.add.text(
+            ww, 0,
+            '0',
+            { fill: '#fff', fontSize: 16 }
+        );
+        this.scoreText.anchor.set(1, 0);
+        this.scoreText.shown = 0;
+
         this.game.time.events.loop(Phaser.Timer.SECOND * 0.08, this.damageAlphaToggle, this);
     },
 
@@ -64,6 +73,7 @@ SECTOR_TAU.Play.prototype = {
         obj.health = health;
         obj.moveState = -1;
         obj.invuln = false;
+        obj.events.onKilled.add(function() { this.score += 9; }, this)
         return obj;
     },
 
@@ -187,10 +197,16 @@ SECTOR_TAU.Play.prototype = {
         this.grumpies.forEachAlive(function(grumpy) {
             this.grumpy1Movement(grumpy, w, h);
         }, this);
+
+        if (this.scoreText.shown < this.score) {
+            this.scoreText.shown += 1;
+            this.scoreText.text = '' + this.scoreText.shown;
+        }
     },
 
     updatePlayer: function() {
-        var maxVel = 300;
+        var maxDX = 300;
+        var maxDY = maxDX / 3;
         var coeff = 1200;
         var drag = 15;
         var threshold = 0.01 * coeff;
@@ -209,7 +225,8 @@ SECTOR_TAU.Play.prototype = {
         }
         this.player.body.acceleration.set(ax, ay);
         this.player.body.velocity.add(dragx, dragy);
-        this.player.body.velocity.clamp(-maxVel, maxVel);
+        this.player.body.velocity.clampX(-maxDX, maxDX);
+        this.player.body.velocity.clampY(-maxDY, maxDY);
 
         var vx = this.player.body.velocity.x;
         if (vx < -145) {
