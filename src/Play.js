@@ -215,36 +215,27 @@ SECTOR_TAU.Play.prototype = {
     },
 
     updatePlayer: function() {
-        var coef = 1200;
-        var coefY = 5 / 9;
+        var coef = 3000;
+        var coefY = 2 / 3;
         var maxDX = 300;
         var maxDY = maxDX * coefY;
         var drag = 15;
-        var threshold = 0.01 * coef;
 
-        var ax = coef * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
+        var stickX = this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
+        var ax = coef * stickX;
         var ay =
             coef * coefY * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
-        var dragx = 0;
-        var dragy = 0;
-        if (Math.abs(ax) < threshold) {
-            ax = 0;
-            dragx = this.calculateDrag(this.player.body.velocity.x, drag);
-        }
-        if (Math.abs(ay) < threshold) {
-            ay = 0;
-            dragy = this.calculateDrag(this.player.body.velocity.y, drag);
-        }
+        var dragx = this.calculateDrag(this.player.body.velocity.x, drag);
+        var dragy = this.calculateDrag(this.player.body.velocity.y, drag);
         this.player.body.acceleration.set(ax, ay);
         this.player.body.velocity.add(dragx, dragy);
         this.player.body.velocity.clampX(-maxDX, maxDX);
         this.player.body.velocity.clampY(-maxDY, maxDY);
 
-        var vx = this.player.body.velocity.x;
-        if (vx < -145) {
+        if (stickX < -0.5) {
             this.player.animations.play('left');
         }
-        else if (vx < 145) {
+        else if (stickX < 0.5) {
             this.player.animations.play('main');
         }
         else {

@@ -20,7 +20,7 @@ SECTOR_TAU.Menu.prototype = {
 
         this.loadingText = this.game.add.text(
             this.world.width / 2, this.world.height / 2,
-            'Loading.',
+            'Loading!',
             { fill: '#fff', fontSize: 24 }
         );
         this.loadingText.anchor.set(0.5, 0.5);
