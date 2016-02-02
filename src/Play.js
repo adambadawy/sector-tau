@@ -4,7 +4,7 @@ SECTOR_TAU.Play = function(game) {
 SECTOR_TAU.Play.prototype = {
     preload: function() {
         this.game.load.atlas(
-            'sprites', 'images/sprites.png', 'images/sprites.json'
+            'sprites', 'res/sprites.png', 'res/sprites.json'
         );
     },
 

@@ -15,9 +15,9 @@ def serve_index():
     return serve('index.html')
 
 
-@app.route('/images/<imagename>')
-def serve_image(imagename):
-	return serve('images/%s' % imagename)
+@app.route('/res/<resource>')
+def serve_res(resource):
+	return serve('res/%s' % resource)
 
 
 @app.route('/lib/<libname>')
