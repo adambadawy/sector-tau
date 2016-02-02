@@ -39,7 +39,9 @@ SECTOR_TAU.Play.prototype = {
         this.scoreText.anchor.set(1, 0);
         this.scoreText.shown = 0;
 
-        this.game.time.events.loop(Phaser.Timer.SECOND * 0.08, this.damageAlphaToggle, this);
+        this.game.time.events.loop(
+            Phaser.Timer.SECOND * 0.08, this.damageAlphaToggle, this
+        );
     },
 
     createPlayer: function(x, y, id) {
@@ -213,15 +215,16 @@ SECTOR_TAU.Play.prototype = {
     },
 
     updatePlayer: function() {
-        var coeff = 1200;
-        var coeffY = 4 / 9;
+        var coef = 1200;
+        var coefY = 5 / 9;
         var maxDX = 300;
-        var maxDY = maxDX * coeffY;
+        var maxDY = maxDX * coefY;
         var drag = 15;
-        var threshold = 0.01 * coeff;
+        var threshold = 0.01 * coef;
 
-        var ax = coeff * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
-        var ay = coeff * coeffY * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
+        var ax = coef * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
+        var ay =
+            coef * coefY * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
         var dragx = 0;
         var dragy = 0;
         if (Math.abs(ax) < threshold) {
