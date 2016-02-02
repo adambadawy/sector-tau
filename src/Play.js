@@ -19,16 +19,9 @@ SECTOR_TAU.Play.prototype = {
 
         this.player = this.createPlayer(hww, wh - 64, 'player1');
 
-        var numGrumpies = 8;
-        var spacing = 64;
-        var margin = -(numGrumpies * spacing);
-        var i;
         this.grumpies = this.game.add.group();
-        for (i = 0; i < numGrumpies; ++i) {
-            this.grumpies.add(
-                this.createGrumpy1(margin + i * spacing, 48)
-            );
-        }
+        this.makeGrumpy1Subgroup(8, 48);
+        this.makeGrumpy2Subgroup(8, 48);
 
         this.score = 0;
         this.scoreText = this.game.add.text(
@@ -40,8 +33,30 @@ SECTOR_TAU.Play.prototype = {
         this.scoreText.shown = 0;
 
         this.game.time.events.loop(
-            Phaser.Timer.SECOND * 0.08, this.damageAlphaToggle, this
+            Phaser.Timer.SECOND * 0.08, this.flickerUpdate, this
         );
+    },
+
+    makeGrumpy1Subgroup: function(n, y) {
+        var spacing = 64;
+        var margin = -(n * spacing);
+        var i;
+        for (i = 0; i < n; ++i) {
+            this.grumpies.add(
+                this.createGrumpy1(margin + i * spacing, y)
+            );
+        }
+    },
+
+    makeGrumpy2Subgroup: function(n, x) {
+        var spacing = 64;
+        var margin = -(n * spacing);
+        var i;
+        for (i = 0; i < n; ++i) {
+            this.grumpies.add(
+                this.createGrumpy2(x, margin + i * spacing)
+            );
+        }
     },
 
     createPlayer: function(x, y, id) {
@@ -53,8 +68,8 @@ SECTOR_TAU.Play.prototype = {
         this.initObject(obj, 3.0);
         obj.body.collideWorldBounds = true;
         obj.health = 10;
-        obj.invuln = false;
-        this.initShooter(obj, Phaser.Timer.SECOND * 0.4);
+        obj.flickerTimer = null;
+        this.initShooter(obj, Phaser.Timer.SECOND * 0.2);
         obj.bullets = this.game.add.group();
         return obj;
     },
@@ -65,20 +80,25 @@ SECTOR_TAU.Play.prototype = {
         });
     },
 
-    createGrumpy: function(x, y, id, health) {
+    createGrumpy: function(x, y, id, health, moveFunc, value) {
         var frames = [id + 'A', id + 'B'];
         var obj = this.createObject2(x, y, 3.0, frames);
         obj.moveState = -1;
+        obj.moveFunc = moveFunc;
         obj.health = health;
-        obj.invuln = false;
+        obj.flickerTimer = null;
         obj.events.onKilled.add(function() {
-            this.score += 9;
+            this.score += value;
         }, this);
         return obj;
     },
 
     createGrumpy1: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy1', 2, this.grumpy1Movement);
+        return this.createGrumpy(x, y, 'enemy1', 4, this.grumpy1Movement, 9);
+    },
+
+    createGrumpy2: function(x, y) {
+        return this.createGrumpy(x, y, 'enemy2', 10, this.grumpy2Movement, 12);
     },
 
     grumpy1Movement: function(obj, w, h) {
@@ -145,9 +165,73 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
+    grumpy2Movement: function(obj, w, h) {
+        var border = 20;
+        var speed = 150;
+        if (obj.moveState === 0) { // Moving down
+            if (obj.bottom >= (h * 3) / 4) {
+                obj.moveTarget = obj.x + obj.width;
+                if (obj.moveTarget > w - border) {
+                    obj.moveState = 4;
+                    obj.body.velocity.set(-speed, 0);
+                    return;
+                }
+                obj.moveState = 1;
+                obj.body.velocity.set(speed, 0);
+            }
+            return;
+        }
+        if (obj.moveState === 1) { // Moving right at bottom
+            if (obj.x >= obj.moveTarget) {
+                obj.moveState = 2;
+                obj.body.velocity.set(0, -speed);
+            }
+            return;
+        }
+        if (obj.moveState === 2) { // Moving up
+            if (obj.top <= border) {
+                obj.moveTarget = obj.x + obj.width;
+                if (obj.moveTarget > w - border) {
+                    obj.moveState = 5;
+                    obj.body.velocity.set(-speed, 0);
+                    return;
+                }
+                obj.moveState = 3;
+                obj.body.velocity.set(speed, 0);
+            }
+            return;
+        }
+        if (obj.moveState === 3) { // Moving right at top
+            if (obj.x >= obj.moveTarget) {
+                obj.moveState = 0;
+                obj.body.velocity.set(0, speed);
+            }
+            return;
+        }
+        if (obj.moveState === 4) { // Reset (move left) at bottom
+            if (obj.left <= border) {
+                obj.moveState = 2;
+                obj.body.velocity.set(0, -speed);
+            }
+            return;
+        }
+        if (obj.moveState === 5) { // Reset (move left) at top
+            if (obj.left <= border) {
+                obj.moveState = 0;
+                obj.body.velocity.set(0, speed);
+            }
+            return;
+        }
+        if (obj.moveState === -1) {
+            obj.moveState = 0;
+            obj.body.velocity.set(0, speed);
+            return;
+        }
+    },
+
     createBullet: function(x, y, dx, dy, id) {
         var obj = this.game.add.sprite(x, y, 'sprites', 'bullet' + id);
-        this.initObject(obj, 3.0);
+        this.initObject(obj, 2.0);
         obj.body.velocity.set(dx, dy);
         obj.checkWorldBounds = true;
         obj.outOfBoundsKill = true;
@@ -182,30 +266,14 @@ SECTOR_TAU.Play.prototype = {
     },
 
     update: function() {
-        this.updatePlayer();
-        this.game.physics.arcade.overlap(
-            this.player.bullets, this.grumpies,
-            function(bullet, grumpy) {
-                bullet.kill();
-                this.damageWrapper(grumpy, 1, Phaser.Timer.SECOND);
-            },
-            null,
-            this
-        );
+        this.doCollision();
 
-        this.game.physics.arcade.overlap(
-            this.player, this.grumpies,
-            function(player, grumpy) {
-                this.damageWrapper(player, 0.5, Phaser.Timer.SECOND);
-            },
-            null,
-            this
-        );
+        this.updatePlayer();
 
         var w = this.world.width;
         var h = this.world.height;
         this.grumpies.forEachAlive(function(grumpy) {
-            this.grumpy1Movement(grumpy, w, h);
+            grumpy.moveFunc(grumpy, w, h);
         }, this);
 
         if (this.scoreText.shown < this.score) {
@@ -214,12 +282,37 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
+    doCollision: function() {
+        this.game.physics.arcade.overlap(
+            this.player.bullets, this.grumpies,
+            function(bullet, grumpy) {
+                bullet.kill();
+                grumpy.damage(1);
+                this.setDamaged(grumpy, Phaser.Timer.SECOND * 0.5);
+            },
+            null,
+            this
+        );
+
+        this.game.physics.arcade.overlap(
+            this.player, this.grumpies,
+            function(player, grumpy) {
+                if (player.flickerTimer === null) {
+                    player.damage(1);
+                }
+                this.setDamaged(player, Phaser.Timer.SECOND * 1.5);
+            },
+            null,
+            this
+        );
+    },
+
     updatePlayer: function() {
-        var coef = 3000;
+        var coef = 3600;
         var coefY = 2 / 3;
-        var maxDX = 300;
+        var maxDX = 360;
         var maxDY = maxDX * coefY;
-        var drag = 15;
+        var drag = 25;
 
         var stickX = this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
         var ax = coef * stickX;
@@ -252,7 +345,7 @@ SECTOR_TAU.Play.prototype = {
     playerShoot: function() {
         var bulletX = this.player.x;
         var bulletY = this.player.top - 1;
-        var bulletDY = -800;
+        var bulletDY = -500;
         var ret = this.player.bullets.getFirstDead(false, bulletX, bulletY);
         if (ret === null) {
             this.player.bullets.add(
@@ -266,14 +359,15 @@ SECTOR_TAU.Play.prototype = {
         this.setReloadTimer(this.player);
     },
 
-    damageWrapper: function(obj, amt, invulnTime) {
-        if (!obj.invuln) {
-            obj.damage(amt);
-            obj.invuln = true;
-            this.game.time.events.add(invulnTime, function() {
-                obj.invuln = false;
-            }, this);
+    // This makes a thingy flicker cause it was hit. It's just an effect.
+    setDamaged: function(obj, invulnTime) {
+        if (obj.flickerTimer !== null) {
+            this.game.time.events.remove(obj.flickerTimer);
+            obj.flickerTimer = null;
         }
+        obj.flickerTimer = this.game.time.events.add(invulnTime, function() {
+            this.flickerTimer = null;
+        }, obj);
     },
 
     // Calculates the drag for the given velocity component for the player
@@ -288,13 +382,13 @@ SECTOR_TAU.Play.prototype = {
         return dragc;
     },
 
-    damageAlphaToggle: function() {
-        this.damageAlphaToggleOne(this.player);
-        this.grumpies.forEachAlive(this.damageAlphaToggleOne, this);
+    flickerUpdate: function() {
+        this.flickerUpdateOne(this.player);
+        this.grumpies.forEachAlive(this.flickerUpdateOne, this);
     },
 
-    damageAlphaToggleOne: function(obj) {
-        if (obj.invuln && obj.alpha === 1) {
+    flickerUpdateOne: function(obj) {
+        if (obj.flickerTimer !== null && obj.alpha === 1) {
             obj.alpha = 0.3;
         }
         else {
