@@ -26,8 +26,8 @@ SECTOR_TAU.Play.prototype = {
         this.player = this.createPlayer(hww, wh - 64, 'player1');
 
         var numGrumpies = 8;
-        var spacing = 48;
-        var margin = hww - ((numGrumpies * spacing) / 2);
+        var spacing = 64;
+        var margin = -(numGrumpies * spacing);
         var i;
         this.grumpies = this.game.add.group();
         for (i = 0; i < numGrumpies; ++i) {
@@ -35,6 +35,8 @@ SECTOR_TAU.Play.prototype = {
                 this.createGrumpy1(margin + i * spacing, 48)
             );
         }
+
+        this.game.time.events.loop(Phaser.Timer.SECOND * 0.08, this.damageAlphaToggle, this);
     },
 
     createPlayer: function(x, y, id) {
@@ -44,7 +46,8 @@ SECTOR_TAU.Play.prototype = {
         obj.animations.add('right', [id + 'Right']);
         obj.animations.play('main');
         this.initObject(obj, 3.0);
-        this.initShooter(obj, Phaser.Timer.SECOND * 0.5);
+        obj.body.collideWorldBounds = true;
+        this.initShooter(obj, Phaser.Timer.SECOND * 0.4);
         obj.bullets = this.game.add.group();
         return obj;
     },
@@ -59,16 +62,82 @@ SECTOR_TAU.Play.prototype = {
         var frames = [id + 'A', id + 'B'];
         var obj = this.createObject2(x, y, 3.0, frames);
         obj.health = health;
+        obj.moveState = -1;
+        obj.invuln = false;
         return obj;
     },
 
-    createGrumpy1: function(x, y, id, health) {
-        return this.createGrumpy(x, y, 'enemy1', 2);
+    createGrumpy1: function(x, y) {
+        return this.createGrumpy(x, y, 'enemy1', 2, this.grumpy1Movement);
+    },
+
+    grumpy1Movement: function(obj, w, h) {
+        var border = 20;
+        var speed = 150;
+        if (obj.moveState === 0) {
+            if (obj.right + border >= w) {
+                if (obj.bottom >= h / 2) {
+                    obj.moveState = 4;
+                    obj.body.velocity.set(0, -speed);
+                    return;
+                }
+                obj.moveState = 1;
+                obj.moveTarget = obj.y + obj.height;
+                obj.body.velocity.set(0, speed);
+            }
+            return;
+        }
+        if (obj.moveState === 1) {
+            if (obj.y >= obj.moveTarget) {
+                obj.moveState = 2;
+                obj.body.velocity.set(-speed, 0);
+            }
+            return;
+        }
+        if (obj.moveState === 2) {
+            if (obj.left <= border) {
+                if (obj.bottom >= h / 2) {
+                    obj.moveState = 5;
+                    obj.body.velocity.set(0, -speed);
+                    return;
+                }
+                obj.moveState = 3;
+                obj.moveTarget = obj.y + obj.height;
+                obj.body.velocity.set(0, speed);
+            }
+            return;
+        }
+        if (obj.moveState === 3) {
+            if (obj.y >= obj.moveTarget) {
+                obj.moveState = 0;
+                obj.body.velocity.set(speed, 0);
+            }
+            return;
+        }
+        if (obj.moveState === 4) {
+            if (obj.top <= border) {
+                obj.moveState = 2;
+                obj.body.velocity.set(-speed, 0);
+            }
+            return;
+        }
+        if (obj.moveState === 5) {
+            if (obj.top <= border) {
+                obj.moveState = 0;
+                obj.body.velocity.set(speed, 0);
+            }
+            return;
+        }
+        if (obj.moveState === -1) {
+            obj.moveState = 0;
+            obj.body.velocity.set(speed, 0);
+            return;
+        }
     },
 
     createBullet: function(x, y, dx, dy, id) {
         var obj = this.game.add.sprite(x, y, 'sprites', 'bullet' + id);
-        this.initObject(obj, 2.0);
+        this.initObject(obj, 3.0);
         obj.body.velocity.set(dx, dy);
         obj.checkWorldBounds = true;
         obj.outOfBoundsKill = true;
@@ -108,15 +177,20 @@ SECTOR_TAU.Play.prototype = {
             this.player.bullets, this.grumpies,
             function(bullet, grumpy) {
                 bullet.kill();
-                grumpy.damage(1);
+                this.grumpyDamage(grumpy);
             },
             null,
             this
         );
+        var w = this.world.width;
+        var h = this.world.height;
+        this.grumpies.forEachAlive(function(grumpy) {
+            this.grumpy1Movement(grumpy, w, h);
+        }, this);
     },
 
     updatePlayer: function() {
-        var maxVel = 200;
+        var maxVel = 300;
         var coeff = 1200;
         var drag = 15;
         var threshold = 0.01 * coeff;
@@ -158,7 +232,7 @@ SECTOR_TAU.Play.prototype = {
     playerShoot: function() {
         var bulletX = this.player.x;
         var bulletY = this.player.top - 1;
-        var bulletDY = -450;
+        var bulletDY = -800;
         var ret = this.player.bullets.getFirstDead(false, bulletX, bulletY);
         if (ret === null) {
             this.player.bullets.add(
@@ -170,6 +244,16 @@ SECTOR_TAU.Play.prototype = {
         }
         this.player.canShoot = false;
         this.setReloadTimer(this.player);
+    },
+
+    grumpyDamage: function(grumpy) {
+        if (!grumpy.invuln) {
+            grumpy.damage(1);
+            grumpy.invuln = true;
+            this.game.time.events.add(Phaser.Timer.SECOND, function() {
+                grumpy.invuln = false;
+            }, this);
+        }
     },
 
     // Calculates the drag for the given velocity component for the player
@@ -184,10 +268,23 @@ SECTOR_TAU.Play.prototype = {
         return dragc;
     },
 
+    damageAlphaToggle: function() {
+        this.grumpies.forEachAlive(this.damageAlphaToggleOne, this);
+    },
+
+    damageAlphaToggleOne: function(obj) {
+        if (obj.invuln && obj.alpha === 1) {
+            obj.alpha = 0.3;
+        }
+        else {
+            obj.alpha = 1;
+        }
+    }
+
     /*
     render: function() {
         this.game.debug.text(
-            '' + this.player.bullets.length,
+            '' + this.tracking.moveState,
             3, 12,
             '#fff'
         );
