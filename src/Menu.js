@@ -16,43 +16,53 @@ SECTOR_TAU.Menu.prototype = {
     },
 
     preload: function() {
+        this.game.stage.backgroundColor = '#000';
+
+        this.loadingText = this.game.add.text(
+            this.world.width / 2, this.world.height / 2,
+            'Loading.',
+            { fill: '#fff', fontSize: 24 }
+        );
+        this.loadingText.anchor.set(0.5, 0.5);
+
         this.game.load.atlas(
             'sprites', 'res/sprites.png', 'res/sprites.json'
         );
+
+        this.game.input.gamepad.start();
+        this.pad = this.game.input.gamepad.pad1;
     },
 
     create: function () {
-        this.game.input.gamepad.start();
-        this.pad = this.game.input.gamepad.pad1;
+        this.loadingText.destroy();
 
-        this.game.stage.backgroundColor = '#000';
-
+        var wh = this.world.height;
         var menuX = this.world.width / 2;
-        var menuPos = this.world.height / 4;
+        var menuPos = wh / 4;
 
-        var title = this.game.add.text(
+        this.title = this.game.add.text(
             menuX,
             menuPos,
             'Sector Tau',
             { fill: '#fff', fontSize: 72 }
         );
-        title.anchor.set(0.5, 0.5);
+        this.title.anchor.set(0.5, 0.5);
 
-        var pressAtk = this.game.add.text(
+        this.pressAtk = this.game.add.text(
             menuX,
             menuPos + 100,
             'Press ATTACK!',
             { fill: '#fff', fontSize: 32 }
         );
-        pressAtk.alpha = 0;
-        pressAtk.anchor.set(0.5, 0.5);
+        this.pressAtk.alpha = 0;
+        this.pressAtk.anchor.set(0.5, 0.5);
 
         var fBlink = function() {
-            if (pressAtk.alpha < 0.001) {
-                pressAtk.alpha = 1;
+            if (this.pressAtk.alpha < 0.001) {
+                this.pressAtk.alpha = 1;
             }
             else {
-                pressAtk.alpha = 0;
+                this.pressAtk.alpha = 0;
             }
         };
         this.game.time.events.loop(Phaser.Timer.SECOND * 0.8, fBlink, this);
@@ -60,6 +70,9 @@ SECTOR_TAU.Menu.prototype = {
 
     update: function() {
         if (this.pad.justPressed(Phaser.Gamepad.XBOX360_A)) {
+            this.pressAtk.destroy();
+            this.title.destroy();
+
             this.state.start('Play');
         }
     }
