@@ -29,10 +29,10 @@ SECTOR_TAU.Play.prototype = {
         var spacing = 48;
         var margin = hww - ((numGrumpies * spacing) / 2);
         var i;
-        this.grumpies = [];
+        this.grumpies = this.game.add.group();
         for (i = 0; i < numGrumpies; ++i) {
-            this.grumpies.push(
-                this.createGrumpy(margin + i * spacing, 48, 'enemy1')
+            this.grumpies.add(
+                this.createGrumpy1(margin + i * spacing, 48)
             );
         }
     },
@@ -55,9 +55,15 @@ SECTOR_TAU.Play.prototype = {
         });
     },
 
-    createGrumpy: function(x, y, id) {
+    createGrumpy: function(x, y, id, health) {
         var frames = [id + 'A', id + 'B'];
-        return this.createObject2(x, y, 3.0, frames);
+        var obj = this.createObject2(x, y, 3.0, frames);
+        obj.health = health;
+        return obj;
+    },
+
+    createGrumpy1: function(x, y, id, health) {
+        return this.createGrumpy(x, y, 'enemy1', 2);
     },
 
     createBullet: function(x, y, dx, dy, id) {
@@ -98,7 +104,15 @@ SECTOR_TAU.Play.prototype = {
 
     update: function() {
         this.updatePlayer();
-        this.game.physics.arcade.overlap(this.player.bullets, this.grumpies);
+        this.game.physics.arcade.overlap(
+            this.player.bullets, this.grumpies,
+            function(bullet, grumpy) {
+                bullet.kill();
+                grumpy.damage(1);
+            },
+            null,
+            this
+        );
     },
 
     updatePlayer: function() {
