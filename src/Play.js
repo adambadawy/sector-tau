@@ -145,6 +145,7 @@ SECTOR_TAU.Play.prototype = {
             this.waveText.bringToTop();
             this.waveText.visible = true;
         }, this);
+        obj.body.setSize(12, 8, 1, 1);
         return obj;
     },
 
@@ -582,15 +583,16 @@ SECTOR_TAU.Play.prototype = {
         else {
             obj.alpha = 1;
         }
-    }
+    },
 
     /*
     render: function() {
-        this.game.debug.text(
-            '' + this.tracking.moveState,
-            3, 12,
-            '#fff'
-        );
+        this.game.debug.body(this.player, 'rgba(255,0,0,0.4)');
+        // this.game.debug.text(
+        //     '' + this.tracking.moveState,
+        //     3, 12,
+        //     '#fff'
+        // );
     }
     // */
 };
