@@ -15,6 +15,8 @@ SECTOR_TAU.Play.prototype = {
         var hww = ww / 2;
         var hwh = wh / 2;
 
+        this.bakeMovements();
+
         this.ENEMY_SPACING = 64;
 
         this.sfx = {};
@@ -63,6 +65,14 @@ SECTOR_TAU.Play.prototype = {
         this.game.time.events.loop(
             Phaser.Timer.SECOND * 1.5, this.grumpyShoot, this
         );
+    },
+
+    bakeMovements: function() {
+        var w = this.world.width;
+        var h = this.world.height;
+        Movement.grumpy1 = Movement.bakeGrumpy1(w, h);
+        Movement.grumpy2 = Movement.bakeGrumpy2(w, h);
+        Movement.grumpy3 = Movement.bakeGrumpy3(w, h);
     },
 
     makeWave: function(n) {
@@ -261,7 +271,7 @@ SECTOR_TAU.Play.prototype = {
         var w = this.world.width;
         var h = this.world.height;
         this.grumpies.forEachAlive(function(grumpy) {
-            grumpy.moveFunc(grumpy, w, h);
+            grumpy.moveFunc(grumpy);
         }, this);
 
         this.updateHudText();

@@ -1,180 +1,194 @@
 var Movement = {
-    grumpy1: function(obj, w, h) {
+    bakeGrumpy1: function(w, h) {
         var border = 20;
         var speed = 150;
-        if (obj.moveState === 0) {
-            if (obj.right + border >= w) {
-                if (obj.bottom >= h - border) {
-                    obj.moveState = 4;
-                    obj.body.velocity.set(0, -speed);
-                    return;
+        var rightBorderX = w - border;
+        var bottomBorderY = h - border;
+        return function(obj) {
+            if (obj.moveState === 0) { // move to right edge
+                if (obj.right >= rightBorderX) {
+                    if (obj.bottom >= bottomBorderY) {
+                        obj.moveState = 4;
+                        obj.body.velocity.set(0, -speed);
+                        return;
+                    }
+                    obj.moveState = 1;
+                    obj.moveTarget = obj.y + obj.height;
+                    obj.body.velocity.set(0, speed);
                 }
-                obj.moveState = 1;
-                obj.moveTarget = obj.y + obj.height;
-                obj.body.velocity.set(0, speed);
+                return;
             }
-            return;
-        }
-        if (obj.moveState === 1) {
-            if (obj.y >= obj.moveTarget) {
-                obj.moveState = 2;
-                obj.body.velocity.set(-speed, 0);
-            }
-            return;
-        }
-        if (obj.moveState === 2) {
-            if (obj.left <= border) {
-                if (obj.bottom >= h - border) {
-                    obj.moveState = 5;
-                    obj.body.velocity.set(0, -speed);
-                    return;
+            if (obj.moveState === 1) { // move down a row on right edge
+                if (obj.y >= obj.moveTarget) {
+                    obj.moveState = 2;
+                    obj.body.velocity.set(-speed, 0);
                 }
-                obj.moveState = 3;
-                obj.moveTarget = obj.y + obj.height;
-                obj.body.velocity.set(0, speed);
+                return;
             }
-            return;
-        }
-        if (obj.moveState === 3) {
-            if (obj.y >= obj.moveTarget) {
+            if (obj.moveState === 2) { // move to left edge
+                if (obj.left <= border) {
+                    if (obj.bottom >= bottomBorderY) {
+                        obj.moveState = 5;
+                        obj.body.velocity.set(0, -speed);
+                        return;
+                    }
+                    obj.moveState = 3;
+                    obj.moveTarget = obj.y + obj.height;
+                    obj.body.velocity.set(0, speed);
+                }
+                return;
+            }
+            if (obj.moveState === 3) { // move down a row on left edge
+                if (obj.y >= obj.moveTarget) {
+                    obj.moveState = 0;
+                    obj.body.velocity.set(speed, 0);
+                }
+                return;
+            }
+            if (obj.moveState === 4) { // climb back up right edge
+                if (obj.top <= border) {
+                    obj.moveState = 2;
+                    obj.body.velocity.set(-speed, 0);
+                }
+                return;
+            }
+            if (obj.moveState === 5) { // climb back up left edge
+                if (obj.top <= border) {
+                    obj.moveState = 0;
+                    obj.body.velocity.set(speed, 0);
+                }
+                return;
+            }
+            if (obj.moveState === -1) { // start offscreen left
                 obj.moveState = 0;
                 obj.body.velocity.set(speed, 0);
+                return;
             }
-            return;
-        }
-        if (obj.moveState === 4) {
-            if (obj.top <= border) {
-                obj.moveState = 2;
-                obj.body.velocity.set(-speed, 0);
-            }
-            return;
-        }
-        if (obj.moveState === 5) {
-            if (obj.top <= border) {
-                obj.moveState = 0;
-                obj.body.velocity.set(speed, 0);
-            }
-            return;
-        }
-        if (obj.moveState === -1) {
-            obj.moveState = 0;
-            obj.body.velocity.set(speed, 0);
-            return;
-        }
+        };
     },
 
-    grumpy2: function(obj, w, h) {
+    bakeGrumpy2: function(w, h) {
         var border = 20;
         var speed = 150;
-        if (obj.moveState === 0) { // Moving down
-            if (obj.bottom >= h - border) {
-                obj.moveTarget = obj.x + obj.width;
-                if (obj.moveTarget > w - border) {
-                    obj.moveState = 4;
-                    obj.body.velocity.set(-speed, 0);
-                    return;
+        var rightBorderX = w - border;
+        var bottomBorderY = h - border;
+        return function(obj) {
+            if (obj.moveState === 0) { // Moving down
+                if (obj.bottom >= bottomBorderY) {
+                    obj.moveTarget = obj.x + obj.width;
+                    if (obj.moveTarget > rightBorderX) {
+                        obj.moveState = 4;
+                        obj.body.velocity.set(-speed, 0);
+                        return;
+                    }
+                    obj.moveState = 1;
+                    obj.body.velocity.set(speed, 0);
                 }
-                obj.moveState = 1;
-                obj.body.velocity.set(speed, 0);
+                return;
             }
-            return;
-        }
-        if (obj.moveState === 1) { // Moving right at bottom
-            if (obj.x >= obj.moveTarget) {
-                obj.moveState = 2;
-                obj.body.velocity.set(0, -speed);
-            }
-            return;
-        }
-        if (obj.moveState === 2) { // Moving up
-            if (obj.top <= border) {
-                obj.moveTarget = obj.x + obj.width;
-                if (obj.moveTarget > w - border) {
-                    obj.moveState = 5;
-                    obj.body.velocity.set(-speed, 0);
-                    return;
+            if (obj.moveState === 1) { // Moving right at bottom
+                if (obj.x >= obj.moveTarget) {
+                    obj.moveState = 2;
+                    obj.body.velocity.set(0, -speed);
                 }
-                obj.moveState = 3;
-                obj.body.velocity.set(speed, 0);
+                return;
             }
-            return;
-        }
-        if (obj.moveState === 3) { // Moving right at top
-            if (obj.x >= obj.moveTarget) {
+            if (obj.moveState === 2) { // Moving up
+                if (obj.top <= border) {
+                    obj.moveTarget = obj.x + obj.width;
+                    if (obj.moveTarget > rightBorderX) {
+                        obj.moveState = 5;
+                        obj.body.velocity.set(-speed, 0);
+                        return;
+                    }
+                    obj.moveState = 3;
+                    obj.body.velocity.set(speed, 0);
+                }
+                return;
+            }
+            if (obj.moveState === 3) { // Moving right at top
+                if (obj.x >= obj.moveTarget) {
+                    obj.moveState = 0;
+                    obj.body.velocity.set(0, speed);
+                }
+                return;
+            }
+            if (obj.moveState === 4) { // Reset (move left) at bottom
+                if (obj.left <= border) {
+                    obj.moveState = 2;
+                    obj.body.velocity.set(0, -speed);
+                }
+                return;
+            }
+            if (obj.moveState === 5) { // Reset (move left) at top
+                if (obj.left <= border) {
+                    obj.moveState = 0;
+                    obj.body.velocity.set(0, speed);
+                }
+                return;
+            }
+            if (obj.moveState === -1) { // start above screen
                 obj.moveState = 0;
                 obj.body.velocity.set(0, speed);
+                return;
             }
-            return;
-        }
-        if (obj.moveState === 4) { // Reset (move left) at bottom
-            if (obj.left <= border) {
-                obj.moveState = 2;
-                obj.body.velocity.set(0, -speed);
-            }
-            return;
-        }
-        if (obj.moveState === 5) { // Reset (move left) at top
-            if (obj.left <= border) {
-                obj.moveState = 0;
-                obj.body.velocity.set(0, speed);
-            }
-            return;
-        }
-        if (obj.moveState === -1) {
-            obj.moveState = 0;
-            obj.body.velocity.set(0, speed);
-            return;
-        }
+        };
     },
 
-    grumpy3: function(obj, w, h) {
+    bakeGrumpy3: function(w, h) {
         var border = 20;
+        var bottomBorderY = h - border;
         var speed = 300;
-        if (obj.moveState === 0) { // sweep down+right
-            if (obj.bottom >= h - border) {
-                obj.moveState = 1;
-                obj.body.velocity.set(0, -(speed / 2));
+        var speedX = speed * 1.5;
+        var speedY = speed / 3;
+        var climbSpeed = -(speed / 2);
+        return function(obj) {
+            if (obj.moveState === 0) { // sweep down+right
+                if (obj.bottom >= bottomBorderY) {
+                    obj.moveState = 1;
+                    obj.body.velocity.set(0, climbSpeed);
+                    return;
+                }
+                var q = obj.y / h;
+                obj.body.velocity.set(speedX * q, speedY / q);
                 return;
             }
-            var q = obj.y / h;
-            obj.body.velocity.set((speed * 1.5) * q, speed / (3 * q));
-            return;
-        }
-        if (obj.moveState === 1) { // climb up right side
-            if (obj.top <= border) {
-                obj.moveState = 2;
-                obj.body.velocity.set(0, 0);
-            }
-            return;
-        }
-        if (obj.moveState === 2) { // sweep down+left
-            if (obj.bottom >= h - border) {
-                obj.moveState = 3;
-                obj.body.velocity.set(0, -(speed / 2));
+            if (obj.moveState === 1) { // climb up right side
+                if (obj.top <= border) {
+                    obj.moveState = 2;
+                    obj.body.velocity.set(0, 0);
+                }
                 return;
             }
-            var q = obj.y / h;
-            obj.body.velocity.set((speed * -1.5) * q, speed / (3 * q));
-            return;
-        }
-        if (obj.moveState === 3) { // climb up left side
-            if (obj.top <= border) {
-                obj.moveState = 0;
-                obj.body.velocity.set(0, 0);
+            if (obj.moveState === 2) { // sweep down+left
+                if (obj.bottom >= bottomBorderY) {
+                    obj.moveState = 3;
+                    obj.body.velocity.set(0, climbSpeed);
+                    return;
+                }
+                var q = obj.y / h;
+                obj.body.velocity.set(-(speedX * q), speedY / q);
+                return;
             }
-            return;
-        }
-        if (obj.moveState === -1) {
-            obj.moveState = -2;
-            obj.body.velocity.set(0, speed);
-            return;
-        }
-        if (obj.moveState === -2) { // Moving into top-left start pos
-            if (obj.top >= border) {
-                obj.moveState = 0;
-                obj.body.velocity.set(0, 0);
+            if (obj.moveState === 3) { // climb up left side
+                if (obj.top <= border) {
+                    obj.moveState = 0;
+                    obj.body.velocity.set(0, 0);
+                }
+                return;
             }
-            return;
-        }
+            if (obj.moveState === -1) { // start above screen
+                obj.moveState = -2;
+                obj.body.velocity.set(0, speed);
+                return;
+            }
+            if (obj.moveState === -2) { // move to start pos from above screen
+                if (obj.top >= border) {
+                    obj.moveState = 0;
+                    obj.body.velocity.set(0, 0);
+                }
+                return;
+            }
+        };
     }
 };
