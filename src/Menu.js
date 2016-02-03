@@ -30,7 +30,7 @@ SECTOR_TAU.Menu.prototype = {
 
         this.loadingText = this.game.add.text(
             this.world.width / 2, this.world.height / 2,
-            'Loading!',
+            'LθADING',
             { fill: '#fff', fontSize: 24 }
         );
         this.loadingText.anchor.set(0.5, 0.5);
@@ -42,6 +42,13 @@ SECTOR_TAU.Menu.prototype = {
         this.game.load.atlas(
             'sprites', 'res/sprites.png', 'res/sprites.json'
         );
+
+        var soundFilenames = [
+            'damage1', 'destroy1', 'scoreup', 'shot1', 'shot2'
+        ];
+        soundFilenames.forEach(function(name) {
+            this.game.load.audio(name, 'res/' + name + '.wav');
+        }, this);
 
         this.game.input.gamepad.start();
         this.pad = this.game.input.gamepad.pad1;

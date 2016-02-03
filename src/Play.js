@@ -20,8 +20,10 @@ SECTOR_TAU.Play.prototype = {
         this.player = this.createPlayer(hww, wh - 64, 'player1');
 
         this.grumpies = this.game.add.group();
+        this.makeGrumpy2Subgroup(4, 48);
+        this.makeGrumpy2Subgroup(4, 48 * 6, 2);
         this.makeGrumpy1Subgroup(8, 48);
-        this.makeGrumpy2Subgroup(8, 48);
+        this.makeGrumpy1Subgroup(8, 48 * 6, 1);
 
         this.scoreText = this.game.add.text(
             ww - 4, 0, '0',
@@ -36,9 +38,10 @@ SECTOR_TAU.Play.prototype = {
         );
     },
 
-    makeGrumpy1Subgroup: function(n, y) {
+    makeGrumpy1Subgroup: function(n, y, blanks) {
+        if (typeof blanks === 'undefined') blanks = 0;
         var spacing = 64;
-        var margin = -(n * spacing);
+        var margin = -((n + blanks) * spacing);
         var i;
         for (i = 0; i < n; ++i) {
             this.grumpies.add(
@@ -47,9 +50,10 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
-    makeGrumpy2Subgroup: function(n, x) {
+    makeGrumpy2Subgroup: function(n, x, blanks) {
+        if (typeof blanks === 'undefined') blanks = 0;
         var spacing = 64;
-        var margin = -(n * spacing);
+        var margin = -((n + blanks) * spacing);
         var i;
         for (i = 0; i < n; ++i) {
             this.grumpies.add(
@@ -93,11 +97,11 @@ SECTOR_TAU.Play.prototype = {
     },
 
     createGrumpy1: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy1', 4, this.grumpy1Movement, 9);
+        return this.createGrumpy(x, y, 'enemy1', 12, this.grumpy1Movement, 9);
     },
 
     createGrumpy2: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy2', 10, this.grumpy2Movement, 12);
+        return this.createGrumpy(x, y, 'enemy2', 18, this.grumpy2Movement, 12);
     },
 
     grumpy1Movement: function(obj, w, h) {
@@ -105,7 +109,7 @@ SECTOR_TAU.Play.prototype = {
         var speed = 150;
         if (obj.moveState === 0) {
             if (obj.right + border >= w) {
-                if (obj.bottom >= h / 2) {
+                if (obj.bottom >= h - border) {
                     obj.moveState = 4;
                     obj.body.velocity.set(0, -speed);
                     return;
@@ -125,7 +129,7 @@ SECTOR_TAU.Play.prototype = {
         }
         if (obj.moveState === 2) {
             if (obj.left <= border) {
-                if (obj.bottom >= h / 2) {
+                if (obj.bottom >= h - border) {
                     obj.moveState = 5;
                     obj.body.velocity.set(0, -speed);
                     return;
@@ -168,7 +172,7 @@ SECTOR_TAU.Play.prototype = {
         var border = 20;
         var speed = 150;
         if (obj.moveState === 0) { // Moving down
-            if (obj.bottom >= (h * 3) / 4) {
+            if (obj.bottom >= h - border) {
                 obj.moveTarget = obj.x + obj.width;
                 if (obj.moveTarget > w - border) {
                     obj.moveState = 4;
