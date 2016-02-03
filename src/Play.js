@@ -42,16 +42,16 @@ SECTOR_TAU.Play.prototype = {
 
         this.grumpies = this.game.add.group();
 
-        this.scoreText = this.game.add.text(
-            ww - 4, 0, '0',
+        this.score = 0;
+        this.hudText = this.game.add.text(
+            4, 0, 'OOPS',
             { fill: '#fff', font: FONT_OTHER, fontSize: 32, fontStyle: 'bold' }
         );
-        this.scoreText.anchor.set(1, 0);
-        this.scoreText.actual = 0;
-        this.scoreText.shown = 0;
+        this.hudText.shown = -1;
+        this.updateHudText();
 
         this.game.time.events.loop(
-            Phaser.Timer.SECOND * 0.05, this.updateScoreText, this
+            Phaser.Timer.SECOND * 0.05, this.updateShownScore, this
         );
 
         this.game.time.events.loop(
@@ -75,6 +75,7 @@ SECTOR_TAU.Play.prototype = {
             case 9: this.makeWave9(); break;
             case 10: this.makeWave10(); break;
             case 11: this.win(); break;
+            default: console.log('OOPS');
         }
     },
 
@@ -121,7 +122,7 @@ SECTOR_TAU.Play.prototype = {
         obj.animations.play('main');
         this.initObject(obj, 3.0);
         obj.body.collideWorldBounds = true;
-        obj.health = 10;
+        obj.health = 3;
         obj.flickerTimer = null;
         this.initShooter(obj, Phaser.Timer.SECOND * 0.1);
         obj.bullets = this.game.add.group();
@@ -158,7 +159,7 @@ SECTOR_TAU.Play.prototype = {
     },
 
     createGrumpy2: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy2', 16, this.grumpy2Movement, 80);
+        return this.createGrumpy(x, y, 'enemy2', 14, this.grumpy2Movement, 80);
     },
 
     grumpy1Movement: function(obj, w, h) {
@@ -381,26 +382,31 @@ SECTOR_TAU.Play.prototype = {
     },
 
     addScore: function(amt) {
-        this.scoreText.actual =
-            Math.max(Math.min(this.scoreText.actual + amt, 9999999), 0);
+        this.score = Math.max(Math.min(this.score + amt, 9999999), 0);
     },
 
-    updateScoreText: function() {
-        if (this.scoreText.shown === this.scoreText.actual) {
+    updateShownScore: function() {
+        if (this.hudText.shown === this.score) {
             return;
         }
-        if (this.scoreText.shown < this.scoreText.actual - 10) {
-            this.scoreText.shown += 10;
+        if (this.hudText.shown < this.score - 10) {
+            this.hudText.shown += 10;
             this.sfx.scoreup.play();
         }
-        else if (this.scoreText.shown < this.scoreText.actual) {
-            this.scoreText.shown += 1;
+        else if (this.hudText.shown < this.score) {
+            this.hudText.shown += 1;
             this.sfx.scoreup.play();
         }
-        else {
-            this.scoreText.shown = this.scoreText.actual;
+        else { // if the score is lower than shown, just jump to that value
+            this.hudText.shown = this.score;
         }
-        this.scoreText.text = '' + this.scoreText.shown;
+        this.updateHudText();
+    },
+
+    updateHudText: function() {
+        this.hudText.text =
+            'Score: ' + ('       ' + this.hudText.shown).slice(-7) + '      ' +
+            'Hull: ' + ('  ' + this.player.health).slice(-2);
     },
 
     doCollision: function() {
@@ -412,8 +418,7 @@ SECTOR_TAU.Play.prototype = {
                 this.setDamaged(grumpy, Phaser.Timer.SECOND * 0.5);
                 this.addScore(1);
             },
-            null,
-            this
+            null, this
         );
 
         this.game.physics.arcade.overlap(
@@ -422,11 +427,11 @@ SECTOR_TAU.Play.prototype = {
                 if (player.flickerTimer === null) {
                     this.sfx.damage1.play();
                     player.damage(1);
-                    this.setDamaged(player, Phaser.Timer.SECOND * 0.5);
+                    this.setDamaged(player, Phaser.Timer.SECOND);
+                    this.updateHudText();
                 }
             },
-            null,
-            this
+            null, this
         );
     },
 
@@ -458,7 +463,7 @@ SECTOR_TAU.Play.prototype = {
             this.player.animations.play('right');
         }
 
-        if (this.player.canShoot) {
+        if (!this.waveText.visible && this.player.canShoot) {
             if (this.pad.isDown(Phaser.Gamepad.XBOX360_A)) {
                 this.playerShoot();
             }
