@@ -34,7 +34,7 @@ SECTOR_TAU.Play.prototype = {
 
         this.player = this.createPlayer(hww, wh - 64, 'player1');
 
-        this.wave = 0;
+        this.wave = 4;
         this.waveText = this.game.add.text(
             hww, hwh, 'OOPS',
             { fill: '#fff', font: FONT_TITLE, fontSize: 72 }
@@ -73,6 +73,7 @@ SECTOR_TAU.Play.prototype = {
         Movement.grumpy1 = Movement.bakeGrumpy1(w, h);
         Movement.grumpy2 = Movement.bakeGrumpy2(w, h);
         Movement.grumpy3 = Movement.bakeGrumpy3(w, h);
+        Movement.boss1 = Movement.bakeBoss1(w, h);
     },
 
     makeWave: function(n) {
@@ -111,6 +112,7 @@ SECTOR_TAU.Play.prototype = {
     },
 
     makeWave5: function() {
+        this.makeBoss1();
     },
 
     makeWave6: function() {
@@ -132,6 +134,7 @@ SECTOR_TAU.Play.prototype = {
     },
 
     makeWave10: function() {
+        this.makeBoss2();
     },
 
     makeGrumpy1Subgroup: function(n, yOffs, blanks) {
@@ -170,6 +173,10 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
+    makeBoss1: function() {
+        this.grumpies.add(this.createBoss1());
+    },
+
     createPlayer: function(x, y, id) {
         var obj = this.game.add.sprite(x, y, 'sprites');
         obj.animations.add('left', [id + 'Left']);
@@ -198,9 +205,20 @@ SECTOR_TAU.Play.prototype = {
         });
     },
 
+    createBoss: function(id, health, moveFunc, value) {
+        var obj = this.createObject1(this.world.width / 2, -128, 3.0, id);
+        this.initEnemy(obj, health, moveFunc, value);
+        return obj;
+    },
+
     createGrumpy: function(x, y, id, health, moveFunc, value) {
         var frames = [id + 'A', id + 'B'];
         var obj = this.createObject2(x, y, 3.0, frames);
+        this.initEnemy(obj, health, moveFunc, value);
+        return obj;
+    },
+
+    initEnemy: function(obj, health, moveFunc, value) {
         obj.moveState = -1;
         obj.moveFunc = moveFunc;
         obj.health = health;
@@ -209,7 +227,10 @@ SECTOR_TAU.Play.prototype = {
             this.addScore(value);
             this.sfx.destroy1.play();
         }, this);
-        return obj;
+    },
+
+    createBoss1: function() {
+        return this.createBoss('boss1', 50, Movement.boss1, 500);
     },
 
     createGrumpy1: function(x, y) {
@@ -301,9 +322,7 @@ SECTOR_TAU.Play.prototype = {
     },
 
     grumpyShoot: function() {
-        this.grumpies.forEachAlive(function(grumpy) {
-            this.grumpyShootOne(grumpy);
-        }, this);
+        this.grumpies.forEachAlive(this.grumpyShootOne, this);
     },
 
     grumpyShootOne: function(grumpy) {

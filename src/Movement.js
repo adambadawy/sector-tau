@@ -190,5 +190,26 @@ var Movement = {
                 return;
             }
         };
+    },
+
+    bakeBoss1: function(w, h) {
+        var border = 20;
+        var speed = 100;
+        // var rightBorderX = w - border;
+        // var bottomBorderY = h - border;
+        return function(obj) {
+            if (obj.moveState === -1) { // start centered, above screen
+                obj.moveState = -2;
+                obj.body.velocity.set(0, speed / 2);
+                return;
+            }
+            if (obj.moveState === -2) { // move down into start pos
+                if (obj.top >= border) {
+                    obj.moveState = 0;
+                    obj.body.velocity.set(0, 0);
+                }
+                return;
+            }
+        };
     }
 };
