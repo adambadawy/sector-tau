@@ -21,15 +21,25 @@ SECTOR_TAU.Play.prototype = {
         this.sfx.damage1 = this.game.add.sound('damage1');
         this.sfx.destroy1 = this.game.add.sound('destroy1');
         this.sfx.scoreup = this.game.add.sound('scoreup');
+        this.sfx.shot1 = this.game.add.sound('shot1');
+        this.sfx.shot1.volume = 0.2;
+        this.sfx.shot2 = this.game.add.sound('shot2');
+        this.sfx.shot3 = this.game.add.sound('shot3');
+        this.sfx.shot3.volume = 0.4;
         this.sfx.scoreup.volume = 0.1;
 
         this.player = this.createPlayer(hww, wh - 64, 'player1');
 
+        this.wave = 0;
+        this.waveText = this.game.add.text(
+            hww, hwh,
+            'OOPS',
+            { fill: '#fff', font: FONT_TITLE, fontSize: 72 }
+        );
+        this.waveText.anchor.set(0.5, 0.5);
+        this.waveText.visible = false;
+
         this.grumpies = this.game.add.group();
-        this.makeGrumpy2Subgroup(4, 48);
-        this.makeGrumpy2Subgroup(4, 48 * 6, 2);
-        this.makeGrumpy1Subgroup(8, 48);
-        this.makeGrumpy1Subgroup(8, 48 * 6, 1);
 
         this.scoreText = this.game.add.text(
             ww - 4, 0, '0',
@@ -48,15 +58,43 @@ SECTOR_TAU.Play.prototype = {
         );
     },
 
+    makeWave: function(n) {
+        if (n === 0) {
+            console.log('OOPS');
+        }
+        switch (n) {
+            case 1: this.makeWave1(); break;
+            case 2: this.makeWave2(); break;
+            case 3: this.makeWave3(); break;
+            case 4: this.makeWave4(); break;
+            case 5: this.makeWave5(); break;
+            case 6: this.makeWave6(); break;
+            case 7: this.makeWave7(); break;
+            case 8: this.makeWave8(); break;
+            case 9: this.makeWave9(); break;
+            case 10: this.makeWave10(); break;
+            case 11: this.win(); break;
+        }
+    },
+
+    makeWave1: function() {
+        this.makeGrumpy2Subgroup(4, 48);
+        this.makeGrumpy2Subgroup(4, 48 * 6, 2);
+        this.makeGrumpy1Subgroup(8, 48);
+        this.makeGrumpy1Subgroup(8, 48 * 6, 1);
+    },
+
+    makeWave10: function() {
+        this.makeGrumpy1Subgroup(1, 48);
+    },
+
     makeGrumpy1Subgroup: function(n, y, blanks) {
         if (typeof blanks === 'undefined') blanks = 0;
         var spacing = 64;
         var margin = -((n + blanks) * spacing);
         var i;
         for (i = 0; i < n; ++i) {
-            this.grumpies.add(
-                this.createGrumpy1(margin + i * spacing, y)
-            );
+            this.grumpies.add(this.createGrumpy1(margin + i * spacing, y));
         }
     },
 
@@ -66,9 +104,7 @@ SECTOR_TAU.Play.prototype = {
         var margin = -((n + blanks) * spacing);
         var i;
         for (i = 0; i < n; ++i) {
-            this.grumpies.add(
-                this.createGrumpy2(x, margin + i * spacing)
-            );
+            this.grumpies.add(this.createGrumpy2(x, margin + i * spacing));
         }
     },
 
@@ -85,12 +121,9 @@ SECTOR_TAU.Play.prototype = {
         this.initShooter(obj, Phaser.Timer.SECOND * 0.1);
         obj.bullets = this.game.add.group();
         obj.events.onKilled.add(function() {
-            var gameOver = this.game.add.text(
-                this.world.width / 2, this.world.height / 2,
-                'GAME θVER',
-                { fill: '#fff', font: FONT_TITLE, fontSize: 72 }
-            );
-            gameOver.anchor.set(0.5, 0.5);
+            this.waveText.text = 'GAME θVER';
+            this.waveText.bringToTop();
+            this.waveText.visible = true;
         }, this);
         return obj;
     },
@@ -288,6 +321,8 @@ SECTOR_TAU.Play.prototype = {
     },
 
     update: function() {
+        this.updateWave();
+
         this.doCollision();
 
         if (this.player.alive) {
@@ -299,6 +334,43 @@ SECTOR_TAU.Play.prototype = {
         this.grumpies.forEachAlive(function(grumpy) {
             grumpy.moveFunc(grumpy, w, h);
         }, this);
+    },
+
+    updateWave: function() {
+        if (this.waveText.visible) {
+            return;
+        }
+        if (this.grumpies.getFirstAlive() === null) {
+            this.wave++;
+            this.waveText.text = this.getWaveName(this.wave);
+            this.waveText.bringToTop();
+            this.waveText.visible = true;
+
+            if (this.wave > 10) {
+                return;
+            }
+
+            this.game.time.events.add(Phaser.Timer.SECOND * 2, function() {
+                this.makeWave(this.wave);
+                this.waveText.visible = false;
+            }, this);
+        }
+    },
+
+    getWaveName: function(n) {
+        switch (n) {
+            case 1: return 'WAVE θNE';
+            case 2: return 'WAVE TWθ';
+            case 3: return 'WAVE THREE';
+            case 4: return 'WAVE FθUR';
+            case 5: return 'BθSS WAVE';
+            case 6: return 'WAVE SIX';
+            case 7: return 'WAVE SEVEN';
+            case 8: return 'WAVE EIGHT';
+            case 9: return 'WAVE NINE';
+            case 10: return 'FINAL BθSS';
+            case 11: return 'YθU WθN!'
+        }
     },
 
     addScore: function(amt) {
@@ -389,6 +461,7 @@ SECTOR_TAU.Play.prototype = {
         }
         this.player.canShoot = false;
         this.setReloadTimer(this.player);
+        this.sfx.shot3.play();
     },
 
     // This makes a thingy flicker cause it was hit. It's just an effect.
