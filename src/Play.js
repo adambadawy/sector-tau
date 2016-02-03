@@ -66,9 +66,6 @@ SECTOR_TAU.Play.prototype = {
     },
 
     makeWave: function(n) {
-        if (n === 0) {
-            console.log('OOPS');
-        }
         switch (n) {
             case 1: this.makeWave1(); break;
             case 2: this.makeWave2(); break;
