@@ -40,7 +40,7 @@ SECTOR_TAU.Menu.prototype = {
             '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js'
         );
         this.game.load.atlas(
-            'sprites', 'res/sprites.png', 'res/sprites.json'
+            'sprites', 'res/sprites.png', 'res/sprites.min.json'
         );
 
         var soundFilenames = [
