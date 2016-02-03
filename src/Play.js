@@ -18,6 +18,7 @@ SECTOR_TAU.Play.prototype = {
         var hwh = wh / 2;
 
         this.ENEMY_SPACING = 64;
+        this.ENEMY_SHOT_FREQ = 100;
 
         this.sfx = {};
         this.sfx.damage1 = this.game.add.sound('damage1');
@@ -41,8 +42,10 @@ SECTOR_TAU.Play.prototype = {
         this.waveText.visible = false;
 
         this.grumpies = this.game.add.group();
+        this.grumpyBullets = this.game.add.group();
 
         this.score = 0;
+        this.maxScore = 0;
         this.hudText = this.game.add.text(
             4, 0, 'OOPS',
             { fill: '#fff', font: FONT_OTHER, fontSize: 32, fontStyle: 'bold' }
@@ -84,6 +87,16 @@ SECTOR_TAU.Play.prototype = {
     },
 
     makeWave2: function() {
+        this.makeGrumpy2Subgroup(4, 3, 2);
+        this.makeGrumpy2Subgroup(4, 9);
+    },
+
+    makeWave3: function() {
+        this.makeGrumpy1Subgroup(16, 0);
+        this.makeGrumpy2Subgroup(4, 9);
+    },
+
+    makeWave4: function() {
         this.makeGrumpy2Subgroup(4, 0);
         this.makeGrumpy2Subgroup(4, 4, 2);
         this.makeGrumpy1Subgroup(8, 0);
@@ -123,6 +136,7 @@ SECTOR_TAU.Play.prototype = {
         this.initObject(obj, 3.0);
         obj.body.collideWorldBounds = true;
         obj.health = 3;
+        obj.healthEarned = 0;
         obj.flickerTimer = null;
         this.initShooter(obj, Phaser.Timer.SECOND * 0.1);
         obj.bullets = this.game.add.group();
@@ -151,6 +165,7 @@ SECTOR_TAU.Play.prototype = {
             this.addScore(value);
             this.sfx.destroy1.play();
         }, this);
+        obj.shoot = this.ENEMY_SHOT_FREQ - this.rand(10) * 1;
         return obj;
     },
 
@@ -290,10 +305,9 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
-    createBullet: function(x, y, dx, dy, id) {
+    createBullet: function(x, y, id, scale) {
         var obj = this.game.add.sprite(x, y, 'sprites', 'bullet' + id);
-        this.initObject(obj, 2.0);
-        obj.body.velocity.set(dx, dy);
+        this.initObject(obj, scale);
         obj.checkWorldBounds = true;
         obj.outOfBoundsKill = true;
         return obj;
@@ -338,6 +352,7 @@ SECTOR_TAU.Play.prototype = {
         var w = this.world.width;
         var h = this.world.height;
         this.grumpies.forEachAlive(function(grumpy) {
+            this.grumpyShoot(grumpy);
             grumpy.moveFunc(grumpy, w, h);
         }, this);
     },
@@ -365,6 +380,26 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
+    grumpyShoot: function(grumpy) {
+        grumpy.shoot--;
+        if (grumpy.shoot === 0) {
+            var bulletX = grumpy.x;
+            var bulletY = grumpy.y;
+            var bullet =
+                this.grumpyBullets.getFirstDead(false, grumpy.x, grumpy.y);
+            if (bullet === null) {
+                bullet = this.createBullet(grumpy.x, grumpy.y, 'White', 3.0);
+                this.grumpyBullets.add(bullet);
+            }
+            this.game.physics.arcade.velocityFromRotation(
+                this.game.physics.arcade.angleBetween(grumpy, this.player),
+                200,
+                bullet.body.velocity
+            );
+            grumpy.shoot = this.ENEMY_SHOT_FREQ;
+        }
+    },
+
     getWaveName: function(n) {
         switch (n) {
             case 1: return 'WAVE θNE';
@@ -383,6 +418,11 @@ SECTOR_TAU.Play.prototype = {
 
     addScore: function(amt) {
         this.score = Math.max(Math.min(this.score + amt, 9999999), 0);
+        while (this.score > (this.player.healthEarned + 1) * 1000) {
+            this.player.health += 1;
+            this.player.healthEarned += 1;
+            this.updateHudText();
+        }
     },
 
     updateShownScore: function() {
@@ -423,16 +463,34 @@ SECTOR_TAU.Play.prototype = {
 
         this.game.physics.arcade.overlap(
             this.player, this.grumpies,
-            function(player, grumpy) {
-                if (player.flickerTimer === null) {
-                    this.sfx.damage1.play();
-                    player.damage(1);
-                    this.setDamaged(player, Phaser.Timer.SECOND);
-                    this.updateHudText();
-                }
-            },
-            null, this
+            this.doCollisionPlayerGrumpy, null, this
         );
+        this.game.physics.arcade.overlap(
+            this.player, this.grumpyBullets,
+            this.doCollisionPlayerBullet, null, this
+        );
+
+        this.updateHudText();
+    },
+
+    doCollisionPlayerGrumpy: function(_player, grumpy) {
+        if (this.player.flickerTimer === null) {
+            this.badPlayerCollision();
+        }
+    },
+
+    doCollisionPlayerBullet: function(_player, bullet) {
+        if (this.player.flickerTimer === null) {
+            bullet.kill();
+            this.badPlayerCollision();
+        }
+    },
+
+    // Some common code in all collisions that are unfortunate for the player
+    badPlayerCollision: function() {
+        this.sfx.damage1.play();
+        this.player.damage(1);
+        this.setDamaged(this.player, Phaser.Timer.SECOND);
     },
 
     updatePlayer: function() {
@@ -473,16 +531,12 @@ SECTOR_TAU.Play.prototype = {
     playerShoot: function() {
         var bulletX = this.player.x;
         var bulletY = this.player.top - 1;
-        var bulletDY = -500;
-        var ret = this.player.bullets.getFirstDead(false, bulletX, bulletY);
-        if (ret === null) {
-            this.player.bullets.add(
-                this.createBullet(bulletX, bulletY, 0, bulletDY, 'Green')
-            );
+        var bullet = this.player.bullets.getFirstDead(false, bulletX, bulletY);
+        if (bullet === null) {
+            bullet = this.createBullet(bulletX, bulletY, 'Green', 2.0);
+            this.player.bullets.add(bullet);
         }
-        else {
-            ret.body.velocity.set(0, bulletDY);
-        }
+        bullet.body.velocity.set(0, -500);
         this.player.canShoot = false;
         this.setReloadTimer(this.player);
         this.addScore(-1);
@@ -510,6 +564,10 @@ SECTOR_TAU.Play.prototype = {
             dragc = Math.min(-vc, drag);
         }
         return dragc;
+    },
+
+    rand: function(n) {
+        return Math.floor(Math.random() * n);
     },
 
     flickerUpdate: function() {
