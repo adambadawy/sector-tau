@@ -17,6 +17,12 @@ SECTOR_TAU.Play.prototype = {
         var hww = ww / 2;
         var hwh = wh / 2;
 
+        this.sfx = {};
+        this.sfx.damage1 = this.game.add.sound('damage1');
+        this.sfx.destroy1 = this.game.add.sound('destroy1');
+        this.sfx.scoreup = this.game.add.sound('scoreup');
+        this.sfx.scoreup.volume = 0.1;
+
         this.player = this.createPlayer(hww, wh - 64, 'player1');
 
         this.grumpies = this.game.add.group();
@@ -32,6 +38,10 @@ SECTOR_TAU.Play.prototype = {
         this.scoreText.anchor.set(1, 0);
         this.scoreText.actual = 0;
         this.scoreText.shown = 0;
+
+        this.game.time.events.loop(
+            Phaser.Timer.SECOND * 0.05, this.updateScoreText, this
+        );
 
         this.game.time.events.loop(
             Phaser.Timer.SECOND * 0.08, this.flickerUpdate, this
@@ -74,6 +84,14 @@ SECTOR_TAU.Play.prototype = {
         obj.flickerTimer = null;
         this.initShooter(obj, Phaser.Timer.SECOND * 0.1);
         obj.bullets = this.game.add.group();
+        obj.events.onKilled.add(function() {
+            var gameOver = this.game.add.text(
+                this.world.width / 2, this.world.height / 2,
+                'GAME θVER',
+                { fill: '#fff', font: FONT_TITLE, fontSize: 72 }
+            );
+            gameOver.anchor.set(0.5, 0.5);
+        }, this);
         return obj;
     },
 
@@ -92,16 +110,17 @@ SECTOR_TAU.Play.prototype = {
         obj.flickerTimer = null;
         obj.events.onKilled.add(function() {
             this.addScore(value);
+            this.sfx.destroy1.play();
         }, this);
         return obj;
     },
 
     createGrumpy1: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy1', 12, this.grumpy1Movement, 9);
+        return this.createGrumpy(x, y, 'enemy1', 6, this.grumpy1Movement, 18);
     },
 
     createGrumpy2: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy2', 18, this.grumpy2Movement, 12);
+        return this.createGrumpy(x, y, 'enemy2', 16, this.grumpy2Movement, 24);
     },
 
     grumpy1Movement: function(obj, w, h) {
@@ -271,22 +290,27 @@ SECTOR_TAU.Play.prototype = {
     update: function() {
         this.doCollision();
 
-        this.updatePlayer();
+        if (this.player.alive) {
+            this.updatePlayer();
+        }
 
         var w = this.world.width;
         var h = this.world.height;
         this.grumpies.forEachAlive(function(grumpy) {
             grumpy.moveFunc(grumpy, w, h);
         }, this);
-
-        if (this.scoreText.shown < this.scoreText.actual) {
-            this.scoreText.shown += 1;
-            this.scoreText.text = '' + this.scoreText.shown;
-        }
     },
 
     addScore: function(amt) {
         this.scoreText.actual = Math.min(this.scoreText.actual + amt, 9999999);
+    },
+
+    updateScoreText: function() {
+        if (this.scoreText.shown < this.scoreText.actual) {
+            this.scoreText.shown += 1;
+            this.scoreText.text = '' + this.scoreText.shown;
+            this.sfx.scoreup.play();
+        }
     },
 
     doCollision: function() {
@@ -305,9 +329,10 @@ SECTOR_TAU.Play.prototype = {
             this.player, this.grumpies,
             function(player, grumpy) {
                 if (player.flickerTimer === null) {
+                    this.sfx.damage1.play();
                     player.damage(1);
+                    this.setDamaged(player, Phaser.Timer.SECOND * 0.5);
                 }
-                this.setDamaged(player, Phaser.Timer.SECOND * 1.5);
             },
             null,
             this
