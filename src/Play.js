@@ -16,7 +16,6 @@ SECTOR_TAU.Play.prototype = {
         var hwh = wh / 2;
 
         this.ENEMY_SPACING = 64;
-        this.ENEMY_SHOT_FREQ = 100;
 
         this.sfx = {};
         this.sfx.damage1 = this.game.add.sound('damage1');
@@ -59,6 +58,10 @@ SECTOR_TAU.Play.prototype = {
 
         this.game.time.events.loop(
             Phaser.Timer.SECOND * 0.08, this.flickerUpdate, this
+        );
+
+        this.game.time.events.loop(
+            Phaser.Timer.SECOND * 1.5, this.grumpyShoot, this
         );
     },
 
@@ -199,7 +202,6 @@ SECTOR_TAU.Play.prototype = {
             this.addScore(value);
             this.sfx.destroy1.play();
         }, this);
-        obj.shoot = this.ENEMY_SHOT_FREQ;
         return obj;
     },
 
@@ -441,7 +443,6 @@ SECTOR_TAU.Play.prototype = {
         var w = this.world.width;
         var h = this.world.height;
         this.grumpies.forEachAlive(function(grumpy) {
-            this.grumpyShoot(grumpy);
             grumpy.moveFunc(grumpy, w, h);
         }, this);
 
@@ -471,24 +472,24 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
-    grumpyShoot: function(grumpy) {
-        grumpy.shoot--;
-        if (grumpy.shoot === 0) {
-            var bulletX = grumpy.x;
-            var bulletY = grumpy.y;
-            var bullet =
-                this.grumpyBullets.getFirstDead(false, grumpy.x, grumpy.y);
-            if (bullet === null) {
-                bullet = this.createBullet(grumpy.x, grumpy.y, 'White', 3.0);
-                this.grumpyBullets.add(bullet);
-            }
-            this.game.physics.arcade.velocityFromRotation(
-                this.game.physics.arcade.angleBetween(grumpy, this.player),
-                200,
-                bullet.body.velocity
-            );
-            grumpy.shoot = this.ENEMY_SHOT_FREQ;
+    grumpyShoot: function() {
+        this.grumpies.forEachAlive(function(grumpy) {
+            this.grumpyShootOne(grumpy);
+        }, this);
+    },
+
+    grumpyShootOne: function(grumpy) {
+        var bullet =
+            this.grumpyBullets.getFirstDead(false, grumpy.x, grumpy.y);
+        if (bullet === null) {
+            bullet = this.createBullet(grumpy.x, grumpy.y, 'White', 3.0);
+            this.grumpyBullets.add(bullet);
         }
+        this.game.physics.arcade.velocityFromRotation(
+            this.game.physics.arcade.angleBetween(grumpy, this.player),
+            200,
+            bullet.body.velocity
+        );
     },
 
     getWaveName: function(n) {
