@@ -44,7 +44,8 @@ SECTOR_TAU.Menu.prototype = {
         );
 
         var soundFilenames = [
-            'damage1', 'destroy1', 'scoreup', 'shot1', 'shot2', 'shot3'
+            'damage1', 'destroy1', 'hullup', 'scoreup', 'shot1', 'shot2',
+            'shot3'
         ];
         soundFilenames.forEach(function(name) {
             this.game.load.audio(name, 'res/' + name + '.wav');

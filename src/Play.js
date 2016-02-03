@@ -21,12 +21,14 @@ SECTOR_TAU.Play.prototype = {
         this.sfx = {};
         this.sfx.damage1 = this.game.add.sound('damage1');
         this.sfx.destroy1 = this.game.add.sound('destroy1');
+        this.sfx.hullup = this.game.add.sound('hullup');
+        this.sfx.hullup.volume = 0.5;
         this.sfx.scoreup = this.game.add.sound('scoreup');
         this.sfx.shot1 = this.game.add.sound('shot1');
         this.sfx.shot1.volume = 0.2;
         this.sfx.shot2 = this.game.add.sound('shot2');
         this.sfx.shot3 = this.game.add.sound('shot3');
-        this.sfx.shot3.volume = 0.4;
+        this.sfx.shot3.volume = 0.6;
         this.sfx.scoreup.volume = 0.1;
 
         this.player = this.createPlayer(hww, wh - 64, 'player1');
@@ -507,10 +509,6 @@ SECTOR_TAU.Play.prototype = {
 
     addScore: function(amt) {
         this.score = Math.max(Math.min(this.score + amt, 9999999), 0);
-        while (this.score > (this.player.healthEarned + 1) * 1000) {
-            this.player.health += 1;
-            this.player.healthEarned += 1;
-        }
     },
 
     updateShownScore: function() {
@@ -527,6 +525,11 @@ SECTOR_TAU.Play.prototype = {
         }
         else { // if the score is lower than shown, just jump to that value
             this.hudText.shown = this.score;
+        }
+        if (this.hudText.shown > (this.player.healthEarned + 1) * 1000) {
+            this.player.health += 1;
+            this.player.healthEarned += 1;
+            this.sfx.hullup.play();
         }
     },
 
