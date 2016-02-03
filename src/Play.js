@@ -8,8 +8,6 @@ SECTOR_TAU.Play.prototype = {
 
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        this.game.time.desiredFps = 60;
-
         this.game.stage.backgroundColor = '#000';
 
         var ww = this.world.width;
@@ -50,7 +48,7 @@ SECTOR_TAU.Play.prototype = {
             4, 0, 'OOPS',
             { fill: '#fff', font: FONT_OTHER, fontSize: 32, fontStyle: 'bold' }
         );
-        this.hudText.shown = -1;
+        this.hudText.shown = 0;
         this.updateHudText();
 
         this.game.time.events.loop(
@@ -77,7 +75,6 @@ SECTOR_TAU.Play.prototype = {
             case 8: this.makeWave8(); break;
             case 9: this.makeWave9(); break;
             case 10: this.makeWave10(); break;
-            case 11: this.win(); break;
             default: console.log('OOPS');
         }
     },
@@ -87,20 +84,42 @@ SECTOR_TAU.Play.prototype = {
     },
 
     makeWave2: function() {
-        this.makeGrumpy2Subgroup(4, 3, 2);
-        this.makeGrumpy2Subgroup(4, 9);
+        this.makeGrumpy3Subgroup(4);
     },
 
     makeWave3: function() {
-        this.makeGrumpy1Subgroup(16, 0);
-        this.makeGrumpy2Subgroup(4, 9);
+        this.makeGrumpy2Subgroup(4, 3);
+        this.makeGrumpy2Subgroup(4, 9, 2);
     },
 
     makeWave4: function() {
+        this.makeGrumpy1Subgroup(12, 0);
+        this.makeGrumpy2Subgroup(2, 9);
+        this.makeGrumpy3Subgroup(3);
+    },
+
+    makeWave5: function() {
+    },
+
+    makeWave6: function() {
+        this.makeGrumpy2Subgroup(4, 3, 2);
+        this.makeGrumpy2Subgroup(8, 9);
+    },
+
+    makeWave7: function() {
+    },
+
+    makeWave8: function() {
         this.makeGrumpy2Subgroup(4, 0);
         this.makeGrumpy2Subgroup(4, 4, 2);
         this.makeGrumpy1Subgroup(8, 0);
         this.makeGrumpy1Subgroup(8, 4, 1);
+    },
+
+    makeWave9: function() {
+    },
+
+    makeWave10: function() {
     },
 
     makeGrumpy1Subgroup: function(n, yOffs, blanks) {
@@ -123,6 +142,18 @@ SECTOR_TAU.Play.prototype = {
         for (i = 0; i < n; ++i) {
             this.grumpies.add(
                 this.createGrumpy2(x, margin + i * this.ENEMY_SPACING)
+            );
+        }
+    },
+
+    makeGrumpy3Subgroup: function(n, blanks) {
+        if (typeof blanks === 'undefined') blanks = 0;
+        var x = 48;
+        var margin = -((n + blanks) * this.ENEMY_SPACING);
+        var i;
+        for (i = 0; i < n; ++i) {
+            this.grumpies.add(
+                this.createGrumpy3(x, margin + i * this.ENEMY_SPACING)
             );
         }
     },
@@ -166,16 +197,20 @@ SECTOR_TAU.Play.prototype = {
             this.addScore(value);
             this.sfx.destroy1.play();
         }, this);
-        obj.shoot = this.ENEMY_SHOT_FREQ - this.rand(10) * 1;
+        obj.shoot = this.ENEMY_SHOT_FREQ;
         return obj;
     },
 
     createGrumpy1: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy1', 6, this.grumpy1Movement, 60);
+        return this.createGrumpy(x, y, 'enemy1', 4, this.grumpy1Movement, 60);
     },
 
     createGrumpy2: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy2', 14, this.grumpy2Movement, 80);
+        return this.createGrumpy(x, y, 'enemy2', 10, this.grumpy2Movement, 80);
+    },
+
+    createGrumpy3: function(x, y) {
+        return this.createGrumpy(x, y, 'enemy3', 3, this.grumpy3Movement, 90);
     },
 
     grumpy1Movement: function(obj, w, h) {
@@ -306,6 +341,57 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
+    grumpy3Movement: function(obj, w, h) {
+        var border = 20;
+        var speed = 300;
+        if (obj.moveState === 0) { // sweep down+right
+            if (obj.bottom >= h - border) {
+                obj.moveState = 1;
+                obj.body.velocity.set(0, -(speed / 2));
+                return;
+            }
+            var q = obj.y / h;
+            obj.body.velocity.set((speed * 1.5) * q, speed / (3 * q));
+            return;
+        }
+        if (obj.moveState === 1) { // climb up right side
+            if (obj.top <= border) {
+                obj.moveState = 2;
+                obj.body.velocity.set(0, 0);
+            }
+            return;
+        }
+        if (obj.moveState === 2) { // sweep down+left
+            if (obj.bottom >= h - border) {
+                obj.moveState = 3;
+                obj.body.velocity.set(0, -(speed / 2));
+                return;
+            }
+            var q = obj.y / h;
+            obj.body.velocity.set((speed * -1.5) * q, speed / (3 * q));
+            return;
+        }
+        if (obj.moveState === 3) { // climb up left side
+            if (obj.top <= border) {
+                obj.moveState = 0;
+                obj.body.velocity.set(0, 0);
+            }
+            return;
+        }
+        if (obj.moveState === -1) {
+            obj.moveState = -2;
+            obj.body.velocity.set(0, speed);
+            return;
+        }
+        if (obj.moveState === -2) { // Moving into top-left start pos
+            if (obj.top >= border) {
+                obj.moveState = 0;
+                obj.body.velocity.set(0, 0);
+            }
+            return;
+        }
+    },
+
     createBullet: function(x, y, id, scale) {
         var obj = this.game.add.sprite(x, y, 'sprites', 'bullet' + id);
         this.initObject(obj, scale);
@@ -356,6 +442,8 @@ SECTOR_TAU.Play.prototype = {
             this.grumpyShoot(grumpy);
             grumpy.moveFunc(grumpy, w, h);
         }, this);
+
+        this.updateHudText();
     },
 
     updateWave: function() {
@@ -422,7 +510,6 @@ SECTOR_TAU.Play.prototype = {
         while (this.score > (this.player.healthEarned + 1) * 1000) {
             this.player.health += 1;
             this.player.healthEarned += 1;
-            this.updateHudText();
         }
     },
 
@@ -441,13 +528,13 @@ SECTOR_TAU.Play.prototype = {
         else { // if the score is lower than shown, just jump to that value
             this.hudText.shown = this.score;
         }
-        this.updateHudText();
     },
 
     updateHudText: function() {
         this.hudText.text =
-            'Score: ' + ('       ' + this.hudText.shown).slice(-7) + '      ' +
-            'Hull: ' + ('  ' + this.player.health).slice(-2);
+            'Score: ' + ('       ' + this.hudText.shown).slice(-7) + '    ' +
+            'Hull: ' + ('  ' + this.player.health).slice(-2) + '    ' +
+            'Wave: ' + ('  ' + Math.min(this.wave, 10)).slice(-2);
     },
 
     doCollision: function() {
@@ -470,8 +557,6 @@ SECTOR_TAU.Play.prototype = {
             this.player, this.grumpyBullets,
             this.doCollisionPlayerBullet, null, this
         );
-
-        this.updateHudText();
     },
 
     doCollisionPlayerGrumpy: function(_player, grumpy) {
