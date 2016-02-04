@@ -255,12 +255,12 @@ SECTOR_TAU.Play.prototype = {
         var health = this.boss.health;
         var tick = this.boss.bossTick;
         if (health < 100) {
-            if (tick % 25 === 0) {
+            if (tick % 30 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 200) {
-            if (tick % 30 === 0) {
+            if (tick % 40 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
@@ -275,17 +275,22 @@ SECTOR_TAU.Play.prototype = {
         var health = this.boss.health;
         var tick = this.boss.bossTick;
         if (health < 100) {
-            if (tick % 15 === 0) {
+            if (tick % 25 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 200) {
-            if (tick % 20 === 0) {
+            if (tick % 28 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
-        else {
-            if (tick % 30 === 0) {
+        else if (health < 300) {
+            if (tick % 32 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
+        else if (health < 400) {
+            if (tick % 37 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
@@ -355,7 +360,7 @@ SECTOR_TAU.Play.prototype = {
             else {
                 this.boss.moveFunc(this.boss);
                 this.boss.updateFunc.call(this);
-                this.boss.bossTick = (this.boss.bossTick + 1) % 100;
+                this.boss.bossTick = (this.boss.bossTick + 1) % 1000000;
             }
         }
 
