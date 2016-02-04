@@ -241,13 +241,13 @@ SECTOR_TAU.Play.prototype = {
 
     createBoss1: function() {
         return this.createBoss(
-            'boss1', 300, Movement.boss1, 600, this.updateBoss1
+            'boss1', 300, Movement.boss1, 1200, this.updateBoss1
         );
     },
 
     createBoss2: function() {
         return this.createBoss(
-            'boss2', 500, Movement.boss1, 1500, this.updateBoss2
+            'boss2', 500, Movement.boss1, 3000, this.updateBoss2
         );
     },
 
@@ -255,17 +255,17 @@ SECTOR_TAU.Play.prototype = {
         var health = this.boss.health;
         var tick = this.boss.bossTick;
         if (health < 100) {
-            if (tick % 30 === 0) {
+            if (tick % 25 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 200) {
-            if (tick % 40 === 0) {
+            if (tick % 35 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else {
-            if (tick % 50 === 0) {
+            if (tick % 45 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
@@ -275,22 +275,27 @@ SECTOR_TAU.Play.prototype = {
         var health = this.boss.health;
         var tick = this.boss.bossTick;
         if (health < 100) {
-            if (tick % 25 === 0) {
+            if (tick % 20 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 200) {
-            if (tick % 28 === 0) {
+            if (tick % 23 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 300) {
-            if (tick % 32 === 0) {
+            if (tick % 26 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 400) {
-            if (tick % 37 === 0) {
+            if (tick % 29 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
+        else {
+            if (tick % 32 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
@@ -378,6 +383,9 @@ SECTOR_TAU.Play.prototype = {
             return;
         }
         if (this.boss === null && this.grumpies.getFirstAlive() === null) {
+            this.grumpyBullets.forEachAlive(function(bullet) {
+                bullet.kill();
+            }, null);
             this.wave++;
             this.waveText.text = this.getWaveName(this.wave);
             this.waveText.bringToTop();
