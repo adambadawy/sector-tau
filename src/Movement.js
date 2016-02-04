@@ -194,19 +194,44 @@ var Movement = {
 
     bakeBoss1: function(w, h) {
         var border = 20;
-        var speed = 100;
+        var rightBorderX = w - border;
+        var ySpeed = 40;
+        var xSpeed = 100;
+        var bottomY = border + 200;
         // var rightBorderX = w - border;
         // var bottomBorderY = h - border;
         return function(obj) {
+            if (obj.moveState >= 0) {
+                if (obj.top <= border) {
+                    obj.body.velocity.y = ySpeed;
+                }
+                if (obj.bottom >= bottomY) {
+                    obj.body.velocity.y = -ySpeed;
+                }
+                if (obj.moveState === 0) {
+                    if (obj.right >= rightBorderX) {
+                        obj.moveState = 1;
+                        obj.body.velocity.x = -xSpeed;
+                    }
+                    return;
+                }
+                if (obj.moveState === 1) {
+                    if (obj.left <= border) {
+                        obj.moveState = 0;
+                        obj.body.velocity.x = xSpeed;
+                    }
+                    return;
+                }
+            }
             if (obj.moveState === -1) { // start centered, above screen
                 obj.moveState = -2;
-                obj.body.velocity.set(0, speed / 2);
+                obj.body.velocity.set(0, ySpeed);
                 return;
             }
             if (obj.moveState === -2) { // move down into start pos
                 if (obj.top >= border) {
                     obj.moveState = 0;
-                    obj.body.velocity.set(0, 0);
+                    obj.body.velocity.x = xSpeed;
                 }
                 return;
             }

@@ -17,6 +17,7 @@ SECTOR_TAU.Play.prototype = {
 
         this.bakeMovements();
 
+        this.NUM_WAVES = 14;
         this.ENEMY_SPACING = 64;
 
         this.sfx = {};
@@ -33,8 +34,9 @@ SECTOR_TAU.Play.prototype = {
         this.sfx.scoreup.volume = 0.1;
 
         this.player = this.createPlayer(hww, wh - 64, 'player1');
+        this.boss = null;
 
-        this.wave = 4;
+        this.wave = 0;
         this.waveText = this.game.add.text(
             hww, hwh, 'OOPS',
             { fill: '#fff', font: FONT_TITLE, fontSize: 72 }
@@ -78,63 +80,72 @@ SECTOR_TAU.Play.prototype = {
 
     makeWave: function(n) {
         switch (n) {
-            case 1: this.makeWave1(); break;
-            case 2: this.makeWave2(); break;
-            case 3: this.makeWave3(); break;
-            case 4: this.makeWave4(); break;
-            case 5: this.makeWave5(); break;
-            case 6: this.makeWave6(); break;
-            case 7: this.makeWave7(); break;
-            case 8: this.makeWave8(); break;
-            case 9: this.makeWave9(); break;
-            case 10: this.makeWave10(); break;
+            case 1:
+                this.makeGrumpy1Subgroup(5, 0);
+                break;
+
+            case 2:
+                this.makeGrumpy2Subgroup(3, 3, 1);
+                this.makeGrumpy2Subgroup(3, 9);
+                break;
+
+            case 3:
+                this.makeGrumpy1Subgroup(4, 0);
+                this.makeGrumpy3Subgroup(2);
+                break;
+
+            case 4:
+                this.makeGrumpy1Subgroup(6, 0);
+                this.makeGrumpy2Subgroup(3, 3);
+                this.makeGrumpy2Subgroup(3, 9, 1);
+                break;
+
+            case 5:
+                this.makeGrumpy1Subgroup(12, 0);
+                this.makeGrumpy2Subgroup(2, 9);
+                this.makeGrumpy3Subgroup(3);
+                break;
+
+            case 6:
+                this.makeGrumpy1Subgroup(12, 0);
+                this.makeGrumpy2Subgroup(2, 9);
+                this.makeGrumpy3Subgroup(3);
+                break;
+
+            case 7:
+                this.boss = this.createBoss1();
+                break;
+
+            case 8:
+                this.makeGrumpy2Subgroup(4, 3, 2);
+                this.makeGrumpy2Subgroup(8, 9);
+                break;
+
+            case 9:
+                break;
+
+            case 10:
+                this.makeGrumpy2Subgroup(4, 0);
+                this.makeGrumpy2Subgroup(4, 4, 2);
+                this.makeGrumpy1Subgroup(8, 0);
+                this.makeGrumpy1Subgroup(8, 4, 1);
+                break;
+
+            case 11:
+                break;
+
+            case 12:
+                break;
+
+            case 13:
+                break;
+
+            case 14:
+                this.boss = this.createBoss2();
+                break;
+
             default: console.log('OOPS');
         }
-    },
-
-    makeWave1: function() {
-        this.makeGrumpy1Subgroup(8, 0);
-    },
-
-    makeWave2: function() {
-        this.makeGrumpy3Subgroup(4);
-    },
-
-    makeWave3: function() {
-        this.makeGrumpy2Subgroup(4, 3);
-        this.makeGrumpy2Subgroup(4, 9, 2);
-    },
-
-    makeWave4: function() {
-        this.makeGrumpy1Subgroup(12, 0);
-        this.makeGrumpy2Subgroup(2, 9);
-        this.makeGrumpy3Subgroup(3);
-    },
-
-    makeWave5: function() {
-        this.makeBoss1();
-    },
-
-    makeWave6: function() {
-        this.makeGrumpy2Subgroup(4, 3, 2);
-        this.makeGrumpy2Subgroup(8, 9);
-    },
-
-    makeWave7: function() {
-    },
-
-    makeWave8: function() {
-        this.makeGrumpy2Subgroup(4, 0);
-        this.makeGrumpy2Subgroup(4, 4, 2);
-        this.makeGrumpy1Subgroup(8, 0);
-        this.makeGrumpy1Subgroup(8, 4, 1);
-    },
-
-    makeWave9: function() {
-    },
-
-    makeWave10: function() {
-        this.makeBoss2();
     },
 
     makeGrumpy1Subgroup: function(n, yOffs, blanks) {
@@ -173,10 +184,6 @@ SECTOR_TAU.Play.prototype = {
         }
     },
 
-    makeBoss1: function() {
-        this.grumpies.add(this.createBoss1());
-    },
-
     createPlayer: function(x, y, id) {
         var obj = this.game.add.sprite(x, y, 'sprites');
         obj.animations.add('left', [id + 'Left']);
@@ -205,9 +212,12 @@ SECTOR_TAU.Play.prototype = {
         });
     },
 
-    createBoss: function(id, health, moveFunc, value) {
+    createBoss: function(id, health, moveFunc, value, updateFunc) {
         var obj = this.createObject1(this.world.width / 2, -128, 3.0, id);
         this.initEnemy(obj, health, moveFunc, value);
+        obj.updateFunc = updateFunc;
+        obj.goons = this.game.add.group();
+        obj.bossTick = 0;
         return obj;
     },
 
@@ -230,7 +240,55 @@ SECTOR_TAU.Play.prototype = {
     },
 
     createBoss1: function() {
-        return this.createBoss('boss1', 50, Movement.boss1, 500);
+        return this.createBoss(
+            'boss1', 300, Movement.boss1, 600, this.updateBoss1
+        );
+    },
+
+    createBoss2: function() {
+        return this.createBoss(
+            'boss2', 500, Movement.boss1, 1500, this.updateBoss2
+        );
+    },
+
+    updateBoss1: function() {
+        var health = this.boss.health;
+        var tick = this.boss.bossTick;
+        if (health < 100) {
+            if (tick % 25 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
+        else if (health < 200) {
+            if (tick % 30 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
+        else {
+            if (tick % 50 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
+    },
+
+    updateBoss2: function() {
+        var health = this.boss.health;
+        var tick = this.boss.bossTick;
+        if (health < 100) {
+            if (tick % 15 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
+        else if (health < 200) {
+            if (tick % 20 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
+        else {
+            if (tick % 30 === 0) {
+                this.grumpyShootOne(this.boss);
+            }
+        }
     },
 
     createGrumpy1: function(x, y) {
@@ -238,11 +296,11 @@ SECTOR_TAU.Play.prototype = {
     },
 
     createGrumpy2: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy2', 10, Movement.grumpy2, 80);
+        return this.createGrumpy(x, y, 'enemy2', 8, Movement.grumpy2, 80);
     },
 
     createGrumpy3: function(x, y) {
-        return this.createGrumpy(x, y, 'enemy3', 3, Movement.grumpy3, 90);
+        return this.createGrumpy(x, y, 'enemy3', 3, Movement.grumpy3, 80);
     },
 
     createBullet: function(x, y, id, scale) {
@@ -289,6 +347,18 @@ SECTOR_TAU.Play.prototype = {
             this.updatePlayer();
         }
 
+        if (this.boss !== null) {
+            if (!this.boss.alive) {
+                this.boss.goons.destroy();
+                this.boss = null;
+            }
+            else {
+                this.boss.moveFunc(this.boss);
+                this.boss.updateFunc.call(this);
+                this.boss.bossTick = (this.boss.bossTick + 1) % 100;
+            }
+        }
+
         var w = this.world.width;
         var h = this.world.height;
         this.grumpies.forEachAlive(function(grumpy) {
@@ -302,7 +372,7 @@ SECTOR_TAU.Play.prototype = {
         if (this.waveText.visible) {
             return;
         }
-        if (this.grumpies.getFirstAlive() === null) {
+        if (this.boss === null && this.grumpies.getFirstAlive() === null) {
             this.wave++;
             this.waveText.text = this.getWaveName(this.wave);
             this.waveText.bringToTop();
@@ -310,7 +380,7 @@ SECTOR_TAU.Play.prototype = {
 
             this.grumpies.removeAll(true);
 
-            if (this.wave > 10) {
+            if (this.wave > this.NUM_WAVES) {
                 return;
             }
 
@@ -326,12 +396,9 @@ SECTOR_TAU.Play.prototype = {
     },
 
     grumpyShootOne: function(grumpy) {
-        var bullet =
-            this.grumpyBullets.getFirstDead(false, grumpy.x, grumpy.y);
-        if (bullet === null) {
-            bullet = this.createBullet(grumpy.x, grumpy.y, 'White', 3.0);
-            this.grumpyBullets.add(bullet);
-        }
+        var bullet = this.getBulletForPool(
+            this.grumpyBullets, grumpy.x, grumpy.y, 'White', 3.0
+        );
         this.game.physics.arcade.velocityFromRotation(
             this.game.physics.arcade.angleBetween(grumpy, this.player),
             200,
@@ -345,13 +412,17 @@ SECTOR_TAU.Play.prototype = {
             case 2: return 'WAVE TWθ';
             case 3: return 'WAVE THREE';
             case 4: return 'WAVE FθUR';
-            case 5: return 'BθSS WAVE';
+            case 5: return 'WAVE FIVE';
             case 6: return 'WAVE SIX';
-            case 7: return 'WAVE SEVEN';
+            case 7: return 'BθSS WAVE';
             case 8: return 'WAVE EIGHT';
             case 9: return 'WAVE NINE';
-            case 10: return 'FINAL BθSS';
-            case 11: return 'YθU WθN!'
+            case 10: return 'WAVE TEN';
+            case 11: return 'WAVE ELEVEN';
+            case 12: return 'WAVE TWELVE';
+            case 13: return 'WAVE THIRTEEN';
+            case 14: return 'FINAL BθSS';
+            case 15: return 'YθU WθN!'
         }
     },
 
@@ -385,18 +456,17 @@ SECTOR_TAU.Play.prototype = {
         this.hudText.text =
             'Score: ' + ('       ' + this.hudText.shown).slice(-7) + '    ' +
             'Hull: ' + ('  ' + this.player.health).slice(-2) + '    ' +
-            'Wave: ' + ('  ' + Math.min(this.wave, 10)).slice(-2);
+            'Wave: ' + ('  ' + Math.min(this.wave, this.NUM_WAVES)).slice(-2);
+        this.hudText.bringToTop();
     },
 
     doCollision: function() {
         this.game.physics.arcade.overlap(
-            this.player.bullets, this.grumpies,
-            function(bullet, grumpy) {
-                bullet.kill();
-                grumpy.damage(1);
-                this.setDamaged(grumpy, Phaser.Timer.SECOND * 0.5);
-                this.addScore(1);
-            },
+            this.boss, this.player.bullets, this.doCollisionBulletEnemy,
+            null, this
+        );
+        this.game.physics.arcade.overlap(
+            this.grumpies, this.player.bullets, this.doCollisionBulletEnemy,
             null, this
         );
 
@@ -408,6 +478,13 @@ SECTOR_TAU.Play.prototype = {
             this.player, this.grumpyBullets,
             this.doCollisionPlayerBullet, null, this
         );
+    },
+
+    doCollisionBulletEnemy: function(enemy, bullet) {
+        bullet.kill();
+        enemy.damage(1);
+        this.setDamaged(enemy, Phaser.Timer.SECOND * 0.5);
+        this.addScore(1);
     },
 
     doCollisionPlayerGrumpy: function(_player, grumpy) {
@@ -466,18 +543,24 @@ SECTOR_TAU.Play.prototype = {
     },
 
     playerShoot: function() {
-        var bulletX = this.player.x;
-        var bulletY = this.player.top - 1;
-        var bullet = this.player.bullets.getFirstDead(false, bulletX, bulletY);
-        if (bullet === null) {
-            bullet = this.createBullet(bulletX, bulletY, 'Green', 2.0);
-            this.player.bullets.add(bullet);
-        }
+        var bullet = this.getBulletForPool(
+            this.player.bullets,
+            this.player.x, this.player.top - 1, 'Green', 2.0
+        );
         bullet.body.velocity.set(0, -500);
         this.player.canShoot = false;
         this.setReloadTimer(this.player);
         this.addScore(-1);
         this.sfx.shot3.play();
+    },
+
+    getBulletForPool: function(pool, x, y, color, scale) {
+        var bullet = pool.getFirstDead(false, x, y);
+        if (bullet === null) {
+            bullet = this.createBullet(x, y, color, scale);
+            pool.add(bullet);
+        }
+        return bullet;
     },
 
     // This makes a thingy flicker cause it was hit. It's just an effect.
@@ -509,6 +592,9 @@ SECTOR_TAU.Play.prototype = {
 
     flickerUpdate: function() {
         this.flickerUpdateOne(this.player);
+        if (this.boss !== null) {
+            this.flickerUpdateOne(this.boss);
+        }
         this.grumpies.forEachAlive(this.flickerUpdateOne, this);
     },
 
