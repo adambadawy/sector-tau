@@ -79,7 +79,7 @@ SECTOR_TAU.Play.prototype = {
     playMusic: function(m, loop) {
         if (typeof loop === 'undefined') loop = true;
         this.music.current.stop();
-        m.play('', 0, 1, true);
+        m.play('', 0, 1, loop);
         this.music.current = m;
     },
 
