@@ -497,7 +497,11 @@ SECTOR_TAU.Play.prototype = {
         if (this.hudText.shown === this.score) {
             return;
         }
-        if (this.hudText.shown < this.score - 10) {
+        if (this.hudText.shown < this.score - 100) {
+            this.hudText.shown += 60;
+            this.sfx.scoreup.play();
+        }
+        else if (this.hudText.shown < this.score - 10) {
             this.hudText.shown += 10;
             this.sfx.scoreup.play();
         }
