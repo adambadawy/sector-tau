@@ -80,13 +80,14 @@ SECTOR_TAU.Menu.prototype = {
         this.pressAtk.anchor.set(0.5, 0.5);
 
         var helpMsg =
-            'One bullet costs one point. Striking an enemy earns one point.\n' +
+            'One bullet costs one point. Shooting an enemy earns one point.\n' +
             'Destroying an enemy earns many points. Each thousand points increases\n' +
             "your ship's hull integrity. If hull integrity falls to zero, game over.\n\n" +
 
             'CONTROLS\n' +
-            'Gamepad:  Move with stick/d-pad and attack with A\n' +
-            'Keyboard: Move with WASD and attack with space';
+            'Gamepad:  Move with left stick, attack with A\n' +
+            'Keyboard: Move with WASD, attack with spacebar\n' +
+            'F5 is the reset button. ;)';
         this.helpText = this.game.add.text(
             6, this.world.height, helpMsg,
             { fill: '#fff', font: FONT_OTHER, fontSize: 18, fontStyle: 'bold' }
@@ -105,7 +106,11 @@ SECTOR_TAU.Menu.prototype = {
     },
 
     update: function() {
-        if (this.pad.justPressed(Phaser.Gamepad.XBOX360_A)) {
+        var spaceDown =
+            this.game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR);
+        var aDown = this.pad.isDown(Phaser.Gamepad.XBOX360_A);
+        if (spaceDown || aDown) {
+            this.helpText.destroy();
             this.pressAtk.destroy();
             this.title.destroy();
             this.menuMusic.destroy();

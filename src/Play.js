@@ -22,6 +22,7 @@ SECTOR_TAU.Play.prototype = {
 
         this.sfx = {};
         this.sfx.damage1 = this.game.add.sound('damage1.wav');
+        this.sfx.damage1.volume = 2.0;
         this.sfx.destroy1 = this.game.add.sound('destroy1.wav');
         this.sfx.destroy1.volume = 2.0;
         this.sfx.hullup = this.game.add.sound('hullup.wav');
@@ -581,10 +582,21 @@ SECTOR_TAU.Play.prototype = {
         var maxDY = maxDX * coefY;
         var drag = 25;
 
-        var stickX = this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
-        var ax = coef * stickX;
-        var ay =
-            coef * coefY * this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
+        var input = new Phaser.Point(
+            this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X),
+            this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y)
+        );
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.A)) { input.x -= 1; }
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.D)) { input.x += 1; }
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.W)) { input.y -= 1; }
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.S)) { input.y += 1; }
+        input.clamp(-1, 1);
+        if (input.getMagnitude() > 1) {
+            input.normalize();
+        }
+
+        var ax = coef * input.x;
+        var ay = coef * coefY * input.y;
         var dragx = this.calculateDrag(this.player.body.velocity.x, drag);
         var dragy = this.calculateDrag(this.player.body.velocity.y, drag);
         this.player.body.acceleration.set(ax, ay);
@@ -592,10 +604,10 @@ SECTOR_TAU.Play.prototype = {
         this.player.body.velocity.clampX(-maxDX, maxDX);
         this.player.body.velocity.clampY(-maxDY, maxDY);
 
-        if (stickX < -0.5) {
+        if (input.x < -0.5) {
             this.player.animations.play('left');
         }
-        else if (stickX < 0.5) {
+        else if (input.x < 0.5) {
             this.player.animations.play('main');
         }
         else {
@@ -603,7 +615,10 @@ SECTOR_TAU.Play.prototype = {
         }
 
         if (!this.waveText.visible && this.player.canShoot) {
-            if (this.pad.isDown(Phaser.Gamepad.XBOX360_A)) {
+            var spaceDown =
+                this.game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR);
+            var aDown = this.pad.isDown(Phaser.Gamepad.XBOX360_A);
+            if (spaceDown || aDown) {
                 this.playerShoot();
             }
         }
