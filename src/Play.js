@@ -21,17 +21,24 @@ SECTOR_TAU.Play.prototype = {
         this.ENEMY_SPACING = 64;
 
         this.sfx = {};
-        this.sfx.damage1 = this.game.add.sound('damage1');
-        this.sfx.destroy1 = this.game.add.sound('destroy1');
-        this.sfx.hullup = this.game.add.sound('hullup');
-        this.sfx.hullup.volume = 0.5;
-        this.sfx.scoreup = this.game.add.sound('scoreup');
-        this.sfx.shot1 = this.game.add.sound('shot1');
-        this.sfx.shot1.volume = 0.2;
-        this.sfx.shot2 = this.game.add.sound('shot2');
-        this.sfx.shot3 = this.game.add.sound('shot3');
-        this.sfx.shot3.volume = 0.6;
-        this.sfx.scoreup.volume = 0.1;
+        this.sfx.damage1 = this.game.add.sound('damage1.wav');
+        this.sfx.destroy1 = this.game.add.sound('destroy1.wav');
+        this.sfx.destroy1.volume = 2.0;
+        this.sfx.hullup = this.game.add.sound('hullup.wav');
+        this.sfx.scoreup = this.game.add.sound('scoreup.wav');
+        this.sfx.shot1 = this.game.add.sound('shot1.wav');
+        this.sfx.shot1.volume = 0.5;
+        this.sfx.shot2 = this.game.add.sound('shot2.wav');
+        this.sfx.shot3 = this.game.add.sound('shot3.wav');
+        this.sfx.shot3.volume = 0.85;
+        this.sfx.scoreup.volume = 0.45;
+
+        this.music = {};
+        this.music.boss = this.game.add.audio('boss.ogg');
+        this.music.waves1 = this.game.add.audio('waves1.ogg');
+        this.music.waves2 = this.game.add.audio('waves2.ogg');
+        this.music.win = this.game.add.audio('win.ogg');
+        this.music.current = this.music.waves1;
 
         this.player = this.createPlayer(hww, wh - 64, 'player1');
         this.boss = null;
@@ -69,6 +76,13 @@ SECTOR_TAU.Play.prototype = {
         );
     },
 
+    playMusic: function(m, loop) {
+        if (typeof loop === 'undefined') loop = true;
+        this.music.current.stop();
+        m.play('', 0, 1, true);
+        this.music.current = m;
+    },
+
     bakeMovements: function() {
         var w = this.world.width;
         var h = this.world.height;
@@ -85,8 +99,7 @@ SECTOR_TAU.Play.prototype = {
                 break;
 
             case 2:
-                this.makeGrumpy2Subgroup(3, 3, 1);
-                this.makeGrumpy2Subgroup(3, 9);
+                this.makeGrumpy2Subgroup(4, 9);
                 break;
 
             case 3:
@@ -102,14 +115,15 @@ SECTOR_TAU.Play.prototype = {
 
             case 5:
                 this.makeGrumpy1Subgroup(12, 0);
-                this.makeGrumpy2Subgroup(2, 9);
+                this.makeGrumpy2Subgroup(5, 9);
                 this.makeGrumpy3Subgroup(3);
+                this.makeGrumpy3Subgroup(3, 20);
                 break;
 
             case 6:
                 this.makeGrumpy1Subgroup(12, 0);
-                this.makeGrumpy2Subgroup(2, 9);
-                this.makeGrumpy3Subgroup(3);
+                this.makeGrumpy2Subgroup(3, 9);
+                this.makeGrumpy3Subgroup(5);
                 break;
 
             case 7:
@@ -117,27 +131,43 @@ SECTOR_TAU.Play.prototype = {
                 break;
 
             case 8:
+                this.makeGrumpy3Subgroup(2);
+                this.makeGrumpy3Subgroup(2, 20);
                 this.makeGrumpy2Subgroup(4, 3, 2);
                 this.makeGrumpy2Subgroup(8, 9);
                 break;
 
             case 9:
+                this.makeGrumpy1Subgroup(12, 0);
+                this.makeGrumpy1Subgroup(12, 1, 4);
+                this.makeGrumpy3Subgroup(3);
                 break;
 
             case 10:
+                this.makeGrumpy2Subgroup(8, 0);
+                this.makeGrumpy2Subgroup(4, 1, 4);
+                this.makeGrumpy3Subgroup(5);
+                break;
+
+            case 11:
                 this.makeGrumpy2Subgroup(4, 0);
                 this.makeGrumpy2Subgroup(4, 4, 2);
                 this.makeGrumpy1Subgroup(8, 0);
                 this.makeGrumpy1Subgroup(8, 4, 1);
                 break;
 
-            case 11:
-                break;
-
             case 12:
+                this.makeGrumpy2Subgroup(4, 4);
+                this.makeGrumpy2Subgroup(4, 8, 2);
+                this.makeGrumpy3Subgroup(8);
+                this.makeGrumpy1Subgroup(8, 8, 1);
                 break;
 
             case 13:
+                this.makeGrumpy1Subgroup(18, 0, 20);
+                this.makeGrumpy3Subgroup(1);
+                this.makeGrumpy2Subgroup(8, 9, 20);
+                this.makeGrumpy3Subgroup(12, 30);
                 break;
 
             case 14:
@@ -255,12 +285,12 @@ SECTOR_TAU.Play.prototype = {
         var health = this.boss.health;
         var tick = this.boss.bossTick;
         if (health < 100) {
-            if (tick % 25 === 0) {
+            if (tick % 20 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 200) {
-            if (tick % 35 === 0) {
+            if (tick % 30 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
@@ -275,27 +305,27 @@ SECTOR_TAU.Play.prototype = {
         var health = this.boss.health;
         var tick = this.boss.bossTick;
         if (health < 100) {
-            if (tick % 20 === 0) {
+            if (tick % 12 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 200) {
-            if (tick % 23 === 0) {
+            if (tick % 15 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 300) {
-            if (tick % 26 === 0) {
+            if (tick % 18 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else if (health < 400) {
-            if (tick % 29 === 0) {
+            if (tick % 21 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
         else {
-            if (tick % 32 === 0) {
+            if (tick % 24 === 0) {
                 this.grumpyShootOne(this.boss);
             }
         }
@@ -394,6 +424,7 @@ SECTOR_TAU.Play.prototype = {
             this.grumpies.removeAll(true);
 
             if (this.wave > this.NUM_WAVES) {
+                this.playMusic(this.music.win, false);
                 return;
             }
 

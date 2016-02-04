@@ -44,11 +44,12 @@ SECTOR_TAU.Menu.prototype = {
         );
 
         var soundFilenames = [
-            'damage1', 'destroy1', 'hullup', 'scoreup', 'shot1', 'shot2',
-            'shot3'
+            'boss.ogg', 'damage1.wav', 'destroy1.wav', 'hullup.wav',
+            'menu.ogg', 'scoreup.wav', 'shot1.wav', 'shot2.wav', 'shot3.wav',
+            'waves1.ogg', 'waves2.ogg', 'win.ogg'
         ];
         soundFilenames.forEach(function(name) {
-            this.game.load.audio(name, 'res/' + name + '.wav');
+            this.game.load.audio(name, 'res/' + name);
         }, this);
 
         this.game.input.gamepad.start();
@@ -58,26 +59,39 @@ SECTOR_TAU.Menu.prototype = {
     create: function () {
         this.loadingText.destroy();
 
+        this.menuMusic = this.game.add.audio('menu.ogg');
+        this.menuMusic.play('', 0, 1, true);
+
         var wh = this.world.height;
         var menuX = this.world.width / 2;
         var menuPos = wh / 4;
 
         this.title = this.game.add.text(
-            menuX,
-            menuPos,
-            'SECTθR TAU',
+            menuX, menuPos, 'SECTθR TAU',
             { fill: '#fff', font: FONT_TITLE, fontSize: 98 }
         );
         this.title.anchor.set(0.5, 0.5);
 
         this.pressAtk = this.game.add.text(
-            menuX,
-            menuPos + 100,
-            'Press ATTACK!',
+            menuX, menuPos + 100, 'Press ATTACK!',
             { fill: '#fff', font: FONT_OTHER, fontSize: 32, fontStyle: 'bold' }
         );
         this.pressAtk.alpha = 0;
         this.pressAtk.anchor.set(0.5, 0.5);
+
+        var helpMsg =
+            'One bullet costs one point. Striking an enemy earns one point.\n' +
+            'Destroying an enemy earns many points. Each thousand points increases\n' +
+            "your ship's hull integrity. If hull integrity falls to zero, game over.\n\n" +
+
+            'CONTROLS\n' +
+            'Gamepad:  Move with stick/d-pad and attack with A\n' +
+            'Keyboard: Move with WASD and attack with space';
+        this.helpText = this.game.add.text(
+            6, this.world.height, helpMsg,
+            { fill: '#fff', font: FONT_OTHER, fontSize: 18, fontStyle: 'bold' }
+        );
+        this.helpText.anchor.set(0, 1);
 
         var fBlink = function() {
             if (this.pressAtk.alpha < 0.001) {
@@ -94,6 +108,7 @@ SECTOR_TAU.Menu.prototype = {
         if (this.pad.justPressed(Phaser.Gamepad.XBOX360_A)) {
             this.pressAtk.destroy();
             this.title.destroy();
+            this.menuMusic.destroy();
 
             this.state.start('Play');
         }
