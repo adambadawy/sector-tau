@@ -416,15 +416,16 @@ SECTOR_TAU.Play.prototype = {
             this.grumpyBullets.forEachAlive(function(bullet) {
                 bullet.kill();
             }, null);
+            this.grumpies.removeAll(true);
+
             this.wave++;
             this.waveText.text = this.getWaveName(this.wave);
             this.waveText.bringToTop();
             this.waveText.visible = true;
 
-            this.grumpies.removeAll(true);
+            this.updateMusic();
 
             if (this.wave > this.NUM_WAVES) {
-                this.playMusic(this.music.win, false);
                 return;
             }
 
@@ -432,6 +433,24 @@ SECTOR_TAU.Play.prototype = {
                 this.makeWave(this.wave);
                 this.waveText.visible = false;
             }, this);
+        }
+    },
+
+    updateMusic: function() {
+        if (this.wave == 1) {
+            this.playMusic(this.music.waves1);
+        }
+        if (this.wave == 7) {
+            this.playMusic(this.music.boss);
+        }
+        if (this.wave == 8) {
+            this.playMusic(this.music.waves2);
+        }
+        if (this.wave == 14) {
+            this.playMusic(this.music.boss);
+        }
+        if (this.wave == 15) {
+            this.playMusic(this.music.win, false);
         }
     },
 
