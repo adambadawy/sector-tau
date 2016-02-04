@@ -615,8 +615,7 @@ SECTOR_TAU.Play.prototype = {
         }
 
         if (!this.waveText.visible && this.player.canShoot) {
-            var spaceDown =
-                this.game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR);
+            var spaceDown = this.game.input.keyboard.isDown(Phaser.KeyCode.J);
             var aDown = this.pad.isDown(Phaser.Gamepad.XBOX360_A);
             if (spaceDown || aDown) {
                 this.playerShoot();

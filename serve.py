@@ -12,7 +12,7 @@ def serve(item):
 
 @app.route('/')
 def serve_index():
-    return serve('index.html')
+    return serve('index.min.html')
 
 
 @app.route('/res/<resource>')

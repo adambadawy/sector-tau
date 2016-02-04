@@ -86,7 +86,7 @@ SECTOR_TAU.Menu.prototype = {
 
             'CONTROLS\n' +
             'Gamepad:  Move with left stick, attack with A\n' +
-            'Keyboard: Move with WASD, attack with spacebar\n' +
+            'Keyboard: Move with WASD, attack with J\n' +
             'F5 is the reset button. ;)';
         this.helpText = this.game.add.text(
             6, this.world.height, helpMsg,
@@ -106,8 +106,7 @@ SECTOR_TAU.Menu.prototype = {
     },
 
     update: function() {
-        var spaceDown =
-            this.game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR);
+        var spaceDown = this.game.input.keyboard.isDown(Phaser.KeyCode.J);
         var aDown = this.pad.isDown(Phaser.Gamepad.XBOX360_A);
         if (spaceDown || aDown) {
             this.helpText.destroy();
