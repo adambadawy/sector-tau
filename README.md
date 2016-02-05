@@ -1,8 +1,7 @@
 *Warning: This is the worst code ever written. I did not know JavaScript when I
 started it.*
 
-
-# Sector Tau
+![](raw/itchcover.png)
 
 I hacked this up for [One Game a Month]. You can play it [here]!
 
